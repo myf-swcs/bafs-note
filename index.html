@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小小飛機設計師：滑翔機挑戰賽 (進階版)</title>
+    <style>
+        :root {
+            /* 小學生塗鴉風格配色 */
+            --primary: #333; /* 鉛筆黑 */
+            --secondary: #ff9900; /* 蠟筆橘 */
+            --accent: #ff4444; /* 老師改考卷的紅 */
+            --bg-color: #87CEEB; /* 天空藍 */
+            --panel-bg: #fffdf0; /* 米黃色圖畫紙 */
+            --text-main: #2c3e50; /* 深藍墨水 */
+            --font-main: 'Comic Sans MS', 'Chalkboard SE', 'Microsoft JhengHei', sans-serif;
+            --border-style: 3px solid #333;
+        }
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-main);
+        }
+
+        /* --- UI Layers --- */
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(2px);
+            z-index: 10;
+            transition: opacity 0.3s;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* --- Workshop Panel --- */
+        .panel {
+            background: var(--panel-bg);
+            border: var(--border-style);
+            box-shadow: 10px 10px 0px rgba(0,0,0,0.2);
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 1100px;
+            width: 95%;
+            height: 90vh;
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 20px;
+            overflow-y: auto;
+            background-image: linear-gradient(#e1e1e1 1px, transparent 1px);
+            background-size: 100% 1.5em;
+        }
+
+        h1, h2, h3 {
+            margin-top: 0;
+            color: #d35400;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            text-shadow: 2px 2px 0px #fff;
+        }
+
+        .selection-group {
+            margin-bottom: 25px;
+            background: rgba(255,255,255,0.8);
+            padding: 10px;
+            border-radius: 10px;
+            border: 2px dashed #aaa;
+        }
+
+        label.group-title {
+            display: block;
+            margin-bottom: 10px;
+            color: var(--text-main);
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); /* 更多選項，保持3列或改4列 */
+            gap: 10px;
+        }
+
+        .option-card {
+            background: #fff;
+            border: 2px solid #ccc;
+            border-radius: 10px;
+            padding: 10px 5px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100px;
+        }
+
+        .option-card:hover {
+            transform: translateY(-5px) rotate(-2deg);
+            border-color: var(--secondary);
+        }
+
+        .option-card.selected {
+            border: 3px solid var(--secondary);
+            background: #fff8e1;
+            box-shadow: 0 0 0 4px rgba(255, 153, 0, 0.2);
+            transform: scale(1.05);
+            z-index: 2;
+        }
+
+        .option-card.disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            background: #eee;
+        }
+
+        .option-card svg {
+            width: 70px;
+            height: 50px;
+            margin-bottom: 5px;
+            fill: none;
+            stroke: #555;
+            stroke-width: 2.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            transition: all 0.3s;
+        }
+
+        .option-card.selected svg {
+            stroke: var(--secondary);
+            stroke-width: 3.5;
+            filter: drop-shadow(2px 2px 0px rgba(0,0,0,0.2));
+        }
+
+        .option-name {
+            font-size: 0.9em;
+            display: block;
+            margin-top: 5px;
+            font-weight: bold;
+        }
+
+        .stats-preview {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            border: 3px solid #444;
+            height: fit-content;
+            box-shadow: 5px 5px 0 #888;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 1.1em;
+            border-bottom: 1px dashed #ccc;
+            padding-bottom: 4px;
+            font-family: 'Comic Sans MS', cursive;
+        }
+
+        .btn {
+            background: #4CAF50;
+            color: white;
+            border: 3px solid #2E7D32;
+            padding: 15px 30px;
+            font-size: 1.5em;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: var(--font-main);
+            border-radius: 50px;
+            width: 100%;
+            margin-top: 30px;
+            box-shadow: 0 6px #2E7D32;
+            transition: all 0.1s;
+        }
+
+        .btn:hover {
+            background: #66BB6A;
+            transform: translateY(2px);
+            box-shadow: 0 4px #2E7D32;
+        }
+        
+        .btn:active {
+            transform: translateY(6px);
+            box-shadow: 0 0 #2E7D32;
+        }
+
+        /* --- HUD --- */
+        #hud {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: 10px;
+            border: 3px solid #333;
+            pointer-events: none;
+            font-size: 18px;
+            z-index: 5;
+            min-width: 150px;
+            box-shadow: 4px 4px 0 rgba(0,0,0,0.2);
+            color: #333;
+        }
+        
+        #wind-indicator {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: 10px;
+            border: 3px solid #333;
+            text-align: right;
+            z-index: 5;
+            box-shadow: 4px 4px 0 rgba(0,0,0,0.2);
+            color: #333;
+        }
+
+        .hud-value { color: #d35400; font-weight: bold; font-family: 'Comic Sans MS', cursive; }
+        .warning { color: red; font-weight: bold; animation: wiggle 0.5s infinite; margin-top: 5px;}
+
+        @keyframes wiggle { 
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(-5deg); }
+            75% { transform: rotate(5deg); }
+            100% { transform: rotate(0deg); }
+        }
+
+        /* --- Report Panel --- */
+        #report-content {
+            font-size: 1.1em;
+            line-height: 1.6;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .analysis-block {
+            background: #e8f5e9;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 5px solid #4CAF50;
+            border-radius: 5px;
+        }
+
+        .concept-tag {
+            display: inline-block;
+            background: #fff;
+            border: 2px solid #333;
+            border-radius: 15px;
+            padding: 2px 10px;
+            font-size: 0.9em;
+            margin-right: 5px;
+            font-weight: bold;
+            color: #555;
+            transform: rotate(-2deg);
+        }
+
+        .score-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 6px dashed #ff9900;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 48px;
+            font-weight: bold;
+            margin: 0 auto 20px auto;
+            color: #ff9900;
+            background: #fff;
+            transform: rotate(-10deg);
+        }
+
+        .controls-hint {
+            position: absolute;
+            bottom: 30px;
+            width: 100%;
+            text-align: center;
+            color: #d35400;
+            font-size: 28px;
+            font-weight: bold;
+            pointer-events: none;
+            z-index: 5;
+            text-shadow: 2px 2px 0px #fff;
+            animation: pulse 1s infinite alternate;
+        }
+
+        @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.05); } }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <!-- WORKSHOP UI -->
+    <div id="workshop" class="overlay">
+        <div class="panel">
+            <div class="column-left">
+                <h2>🪂 滑翔機實驗室 (進階版)</h2>
+                <p>任務：從 50m 高空投放，利用空氣動力學飛得最遠！</p>
+                <div style="background: #e1f5fe; padding: 10px; border-radius: 5px; border: 2px dashed #039be5; margin-bottom: 20px;">
+                    <strong>📢 挑戰條件：</strong> 50m 高度 | 3m/s 逆風 | 無引擎
+                </div>
+                
+                <!-- Fuselage Selection -->
+                <div class="selection-group">
+                    <label class="group-title">1. 機身材質 (影響重量與阻力)</label>
+                    <div class="options-grid" id="opt-fuselage" style="grid-template-columns: repeat(5, 1fr);">
+                        <!-- Generated by JS -->
+                    </div>
+                </div>
+
+                <!-- Wings Selection -->
+                <div class="selection-group">
+                    <label class="group-title">2. 機翼設計 (影響升力與滑翔比)</label>
+                    <div class="options-grid" id="opt-wings" style="grid-template-columns: repeat(5, 1fr);">
+                        <!-- Generated by JS -->
+                    </div>
+                </div>
+
+                <!-- Engine Selection (LOCKED) -->
+                <div class="selection-group" style="opacity: 0.7;">
+                    <label class="group-title">3. 動力系統 (本次實驗禁用)</label>
+                    <div class="options-grid" id="opt-engine">
+                        <!-- Generated by JS -->
+                    </div>
+                </div>
+
+                <button class="btn" onclick="startGame()">🔬 開始物理實驗</button>
+            </div>
+
+            <div class="column-right">
+                <h3>📊 預測數據</h3>
+                <div class="stats-preview">
+                    <div class="stat-row"><span>總重量 (Mass):</span> <span id="stat-mass" class="hud-value">0 kg</span></div>
+                    <div class="stat-row"><span>翼負荷 (Load):</span> <span id="stat-load" class="hud-value">0 kg/m²</span></div>
+                    <div class="stat-row"><span>預估滑翔比:</span> <span id="stat-ratio" class="hud-value">0</span></div>
+                    <div class="stat-row"><span>阻力係數 (Cd):</span> <span id="stat-cd" class="hud-value">0</span></div>
+                    <div class="stat-row"><span>升力係數 (Cl):</span> <span id="stat-cl" class="hud-value">0</span></div>
+                </div>
+                
+                <div style="margin-top: 20px; text-align: center;">
+                    <p style="color: #666; font-size: 1.1em;">✏️ 設計藍圖</p>
+                    <canvas id="previewCanvas" width="350" height="250" style="background: #fff; border: 2px solid #333; border-radius: 10px; box-shadow: 5px 5px 0 rgba(0,0,0,0.1);"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- REPORT UI -->
+    <div id="report" class="overlay hidden">
+        <div class="panel" style="display: block; max-width: 700px; height: auto;">
+            <h2 style="text-align: center;">📝 實驗分析報告</h2>
+            <div class="score-circle" id="report-score">0</div>
+            
+            <div id="report-content">
+                <!-- Generated by JS -->
+            </div>
+
+            <button class="btn" onclick="resetToWorkshop()">🔧 調整參數再試一次</button>
+        </div>
+    </div>
+
+    <!-- HUD -->
+    <div id="hud" class="hidden">
+        <div>☁️ 高度: <span id="hud-alt" class="hud-value">0</span> m</div>
+        <div>💨 速度: <span id="hud-spd" class="hud-value">0</span> km/h</div>
+        <div>📏 距離: <span id="hud-dist" class="hud-value">0</span> m</div>
+        <div>📐 角度: <span id="hud-aoa" class="hud-value">0</span>°</div>
+        <div id="stall-warning" class="warning hidden">!! 失速警報 !!</div>
+    </div>
+
+    <div id="wind-indicator" class="hidden">
+        <div>🚩 逆風環境</div>
+        <div id="hud-wind" class="hud-value">3 m/s</div>
+        <div id="hud-wind-dir" style="font-size: 30px; color: #ff4444;">←</div>
+    </div>
+
+    <div id="controls-hint" class="controls-hint hidden">
+        🤖 AI 輔助駕駛：尋找最佳滑翔路徑...
+    </div>
+
+    <!-- GAME CANVAS -->
+    <canvas id="gameCanvas"></canvas>
+</div>
+
+<script>
+/**
+ * AEROENGINEER: GLIDER CHALLENGE (ADVANCED)
+ * 小小飛機設計師 - 進階滑翔實驗
+ */
+
+// --- CONFIGURATION ---
+
+const PARTS = {
+    fuselage: {
+        balsa: {
+            mass: 50, durability: 0.2, name: "巴爾沙木",
+            path: "M -40 2 L -40 -5 L 40 -2 L 40 2 Z", 
+            scale: 1, color: "#fffdd0" // Cream
+        },
+        light: { 
+            mass: 200, durability: 0.5, name: "碳纖維", 
+            path: "M -45 0 Q -45 -10 35 -10 Q 55 -5 60 0 Q 55 5 35 10 Q -45 10 -45 0 Z",
+            scale: 1, color: "#aaddff"
+        },
+        streamlined: {
+            mass: 300, durability: 0.6, name: "流線賽車",
+            path: "M -50 0 Q -30 -12 20 -8 Q 60 0 70 5 Q 60 10 20 8 Q -30 12 -50 0 Z",
+            scale: 1, color: "#ff9999"
+        },
+        medium: { 
+            mass: 600, durability: 1.0, name: "鋁合金", 
+            path: "M -50 -5 L -50 -15 L -20 -15 L 0 -20 L 40 -15 L 60 0 L 40 10 L -20 10 L -50 5 Z",
+            scale: 1, color: "#eeeeee"
+        },
+        heavy: { 
+            mass: 1200, durability: 2.0, name: "強化鋼", 
+            path: "M -60 -10 L -60 -20 L 40 -20 L 65 0 L 40 20 L -60 20 Z",
+            scale: 1, color: "#999999"
+        }
+    },
+    wings: {
+        training: {
+            area: 28, cd: 0.05, cl_max: 1.8, mass: 90, name: "教練機直翼",
+            path: "M -15 -5 L 15 -5 L 15 5 L -15 5 Z",
+            scale: 1.2, color: "#e0e0e0"
+        },
+        glider: { 
+            area: 40, cd: 0.025, cl_max: 2.4, mass: 110, name: "高展弦滑翔翼",
+            path: "M -20 -2 L 20 -2 Q 25 0 20 2 L -20 2 Q -25 0 -20 -2 Z",
+            scale: 1.6, color: "#ffcccc"
+        },
+        gull: {
+            area: 35, cd: 0.035, cl_max: 2.1, mass: 100, name: "海鷗翼",
+            path: "M -20 0 L -5 -10 L 5 -10 L 20 0 L 15 5 L 0 -5 L -15 5 Z",
+            scale: 1.4, color: "#ccffff"
+        },
+        delta: {
+            area: 30, cd: 0.02, cl_max: 1.4, mass: 130, name: "三角翼",
+            path: "M -10 0 L 20 15 L 20 -15 L -10 0 Z",
+            scale: 1.2, color: "#e6e6fa"
+        },
+        biplane: { 
+            area: 25, cd: 0.08, cl_max: 1.6, mass: 120, name: "雙層翼",
+            path: "M -15 -18 L 25 -18 L 25 -14 L -15 -14 Z  M -15 10 L 25 10 L 25 14 L -15 14 Z M 5 -14 L 5 10 L 8 10 L 8 -14 Z",
+            scale: 1, color: "#ffffcc"
+        }
+    },
+    engine: {
+        none: { 
+            thrust: 0, mass: 0, fuelRate: 0, name: "無引擎",
+            path: "M 0 0", scale: 1, color: "transparent"
+        }
+    }
+};
+
+const PHYSICS = {
+    gravity: 9.81,
+    airDensity: 1.225, 
+    stallAngle: 18, 
+    runwayLength: 3000
+};
+
+// --- VARIABLES ---
+
+let canvas, ctx;
+let previewCanvas, previewCtx;
+let gameState = 'workshop';
+let lastTime = 0;
+let camera = { x: 0, y: -50, zoom: 1 };
+
+let currentConfig = {
+    fuselage: 'balsa',
+    wings: 'glider',
+    engine: 'none'
+};
+
+let flightData = {
+    maxAlt: 0, maxSpeed: 0, distance: 0, flightTime: 0, stallCount: 0, startHeight: 50
+};
+
+let env = {
+    windSpeed: 3, 
+    windDir: -1 
+};
+
+let plane = {
+    x: 0, y: -50, vx: 0, vy: 0, angle: 0, mass: 0,
+    config: {}, crashed: false, grounded: false
+};
+
+// --- INITIALIZATION ---
+
+window.onload = () => {
+    canvas = document.getElementById('gameCanvas');
+    ctx = canvas.getContext('2d');
+    previewCanvas = document.getElementById('previewCanvas');
+    previewCtx = previewCanvas.getContext('2d');
+
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    
+    initWorkshopUI();
+    updateStats();
+    
+    requestAnimationFrame(gameLoop);
+};
+
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+
+// --- UI LOGIC ---
+
+function initWorkshopUI() {
+    createOptions('fuselage', PARTS.fuselage, 'opt-fuselage');
+    createOptions('wings', PARTS.wings, 'opt-wings');
+    
+    // Engine Locked
+    const container = document.getElementById('opt-engine');
+    const div = document.createElement('div');
+    div.className = `option-card selected disabled`;
+    div.innerHTML = `
+        <svg viewBox="-80 -40 160 80" style="overflow:visible;">
+             <circle cx="0" cy="0" r="10" fill="none" stroke="#555" stroke-dasharray="4"/>
+             <line x1="-15" y1="-15" x2="15" y2="15" stroke="#f00" stroke-width="3"/>
+             <line x1="15" y1="-15" x2="-15" y2="15" stroke="#f00" stroke-width="3"/>
+        </svg>
+        <span class="option-name">無引擎</span>
+    `;
+    container.appendChild(div);
+}
+
+function createOptions(category, data, containerId) {
+    const container = document.getElementById(containerId);
+    for (const [key, info] of Object.entries(data)) {
+        const div = document.createElement('div');
+        div.className = `option-card ${currentConfig[category] === key ? 'selected' : ''}`;
+        div.onclick = () => selectPart(category, key);
+        let svgContent = `<path d="${info.path}" />`;
+        div.innerHTML = `
+            <svg viewBox="-80 -40 160 80" style="overflow:visible;">${svgContent}</svg>
+            <span class="option-name">${info.name}</span>
+        `;
+        div.id = `btn-${category}-${key}`;
+        container.appendChild(div);
+    }
+}
+
+function selectPart(category, key) {
+    currentConfig[category] = key;
+    document.querySelectorAll(`#opt-${category} .option-card`).forEach(el => el.classList.remove('selected'));
+    document.getElementById(`btn-${category}-${key}`).classList.add('selected');
+    updateStats();
+}
+
+function updateStats() {
+    const f = PARTS.fuselage[currentConfig.fuselage];
+    const w = PARTS.wings[currentConfig.wings];
+    const e = PARTS.engine.none;
+
+    const totalMass = f.mass + w.mass + e.mass;
+    // Wing Loading = Mass / Area
+    const load = (totalMass / w.area).toFixed(1);
+    const ratio = (w.cl_max / w.cd).toFixed(1);
+    
+    document.getElementById('stat-mass').innerText = totalMass + " kg";
+    document.getElementById('stat-load').innerText = load + " kg/m²";
+    document.getElementById('stat-ratio').innerText = "~" + ratio;
+    document.getElementById('stat-cd').innerText = w.cd;
+    document.getElementById('stat-cl').innerText = w.cl_max;
+
+    drawPreview(f, w, e);
+}
+
+function drawPreview(f, w, e) {
+    const pCtx = previewCtx;
+    pCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+    pCtx.save();
+    pCtx.strokeStyle = "#e1e1e1";
+    pCtx.beginPath();
+    for(let i=0; i<350; i+=20) { pCtx.moveTo(i,0); pCtx.lineTo(i,250); }
+    for(let i=0; i<250; i+=20) { pCtx.moveTo(0,i); pCtx.lineTo(350,i); }
+    pCtx.stroke();
+    pCtx.translate(previewCanvas.width/2, previewCanvas.height/2);
+    pCtx.scale(2.2, 2.2); 
+    drawPlaneBody(pCtx, currentConfig.fuselage, currentConfig.wings, 'none', 0);
+    pCtx.restore();
+}
+
+function startGame() {
+    const f = PARTS.fuselage[currentConfig.fuselage];
+    const w = PARTS.wings[currentConfig.wings];
+
+    plane = {
+        x: 0, 
+        y: -50, 
+        vx: 15, // Launch speed
+        vy: 0,
+        angle: 0, 
+        mass: f.mass + w.mass,
+        wingArea: w.area,
+        cd: w.cd,
+        clMax: w.cl_max,
+        fuel: 0,
+        grounded: false,
+        crashed: false,
+        config: { ...currentConfig }
+    };
+
+    flightData = { maxAlt: 50, maxSpeed: 15, distance: 0, flightTime: 0, stallCount: 0 };
+    
+    camera.x = -200;
+    camera.y = -80; 
+    camera.zoom = 1;
+
+    document.getElementById('workshop').classList.add('hidden');
+    document.getElementById('report').classList.add('hidden');
+    document.getElementById('hud').classList.remove('hidden');
+    document.getElementById('wind-indicator').classList.remove('hidden');
+    document.getElementById('controls-hint').classList.remove('hidden');
+
+    gameState = 'flying';
+}
+
+// --- PHYSICS ---
+
+function updatePhysics(dt) {
+    const subSteps = 3; 
+    const subDt = dt; 
+
+    for(let i=0; i<subSteps; i++) {
+        simulateStep(subDt);
+        if (gameState !== 'flying') break;
+    }
+}
+
+function simulateStep(dt) {
+    if (plane.y >= 0) { 
+        plane.y = 0;
+        plane.grounded = true;
+        endFlight();
+        return;
+    }
+
+    const speed = Math.sqrt(plane.vx*plane.vx + plane.vy*plane.vy);
+    const flightPathAngle = Math.atan2(plane.vy, plane.vx);
+
+    // AI Pilot Logic
+    let targetAoA = 4 * (Math.PI/180); 
+    if (speed < 18) targetAoA = -5 * (Math.PI/180); // Anti-stall dive
+    else if (speed > 35) targetAoA = 6 * (Math.PI/180); // Use energy to float
+
+    let targetPitch = flightPathAngle - targetAoA;
+    if (targetPitch < -1.0) targetPitch = -1.0; 
+    if (targetPitch > 0.5) targetPitch = 0.5; 
+
+    const stability = 3.0 * dt; 
+    plane.angle += (targetPitch - plane.angle) * stability;
+
+    let alpha = flightPathAngle - plane.angle; 
+    const windVel = env.windSpeed * env.windDir; 
+    const relativeVx = plane.vx - windVel; 
+    const airSpeed = Math.sqrt(relativeVx*relativeVx + plane.vy*plane.vy);
+
+    const alphaDeg = alpha * (180/Math.PI);
+    let Cl = 0;
+    if (Math.abs(alphaDeg) < PHYSICS.stallAngle) {
+        Cl = (alphaDeg * 0.11) + 0.3; 
+        if (Cl > plane.clMax) Cl = plane.clMax;
+    } else {
+        Cl = plane.clMax * 0.4; 
+        document.getElementById('stall-warning').classList.remove('hidden');
+        flightData.stallCount++;
+    }
+
+    if (Math.abs(alphaDeg) < PHYSICS.stallAngle) {
+        document.getElementById('stall-warning').classList.add('hidden');
+    }
+
+    const safeAirSpeed = Math.max(0.1, airSpeed);
+    const liftMag = 0.5 * PHYSICS.airDensity * (safeAirSpeed**2) * plane.wingArea * Cl;
+    const liftDir = flightPathAngle - (Math.PI/2);
+    
+    let Cd = plane.cd + (0.0008 * alphaDeg * alphaDeg); 
+    if (Math.abs(alphaDeg) > PHYSICS.stallAngle) Cd *= 3;
+    const dragMag = 0.5 * PHYSICS.airDensity * (safeAirSpeed**2) * plane.wingArea * Cd;
+    const dragDir = flightPathAngle + Math.PI;
+
+    const F_lift_x = Math.cos(liftDir) * liftMag;
+    const F_lift_y = Math.sin(liftDir) * liftMag;
+    const F_drag_x = Math.cos(dragDir) * dragMag;
+    const F_drag_y = Math.sin(dragDir) * dragMag;
+    const F_grav_y = plane.mass * PHYSICS.gravity;
+
+    const ax = (F_lift_x + F_drag_x) / plane.mass;
+    const ay = (F_lift_y + F_drag_y + F_grav_y) / plane.mass;
+
+    plane.vx += ax * dt;
+    plane.vy += ay * dt;
+    plane.x += plane.vx * dt;
+    plane.y += plane.vy * dt;
+
+    if (speed > flightData.maxSpeed) flightData.maxSpeed = speed;
+    flightData.distance = plane.x;
+    flightData.flightTime += dt;
+}
+
+// --- RENDERING ---
+
+function draw() {
+    drawSky(ctx, canvas.width, canvas.height);
+    if (gameState === 'workshop') return; 
+
+    let targetCamX = plane.x - canvas.width * 0.3;
+    let targetCamY = plane.y - canvas.height * 0.4; 
+    camera.x += (targetCamX - camera.x) * 0.1;
+    camera.y += (targetCamY - camera.y) * 0.1;
+    if (camera.y > 50) camera.y = 50;
+
+    ctx.save();
+    ctx.translate(-camera.x, -camera.y);
+    drawGround(ctx);
+    
+    ctx.translate(plane.x, plane.y);
+    ctx.rotate(plane.angle);
+    drawPlaneBody(ctx, plane.config.fuselage, plane.config.wings, 'none', 0);
+    ctx.restore();
+
+    if (Math.sqrt(plane.vx**2 + plane.vy**2) > 25) drawSpeedLines(ctx);
+    updateHUD();
+}
+
+function drawSky(c, w, h) {
+    const g = c.createLinearGradient(0,0,0,h);
+    g.addColorStop(0, "#87CEEB"); g.addColorStop(1, "#E0F7FA");
+    c.fillStyle = g; c.fillRect(0,0,w,h);
+    c.fillStyle = "#FFD700";
+    c.beginPath(); c.arc(w-80, 80, 40, 0, Math.PI*2); c.fill();
+}
+
+function drawGround(c) {
+    c.fillStyle = "#81C784";
+    c.fillRect(camera.x - 100, 0, canvas.width + 200, 1000);
+    
+    c.fillStyle = "#5D4037";
+    c.textAlign = "center";
+    c.font = "bold 20px 'Comic Sans MS'";
+    for(let i=0; i<plane.x+3000; i+=100) {
+        if (i % 500 === 0) {
+            c.fillRect(i-2, 0, 4, -50);
+            c.fillStyle = "#FFCC80"; c.fillRect(i-30, -70, 60, 20);
+            c.fillStyle = "#5D4037"; c.fillText(i+"m", i, -55);
+        }
+    }
+}
+
+function drawSpeedLines(c) {
+    c.strokeStyle = "rgba(255,255,255,0.4)";
+    c.lineWidth = 2;
+    for(let i=0; i<5; i++) {
+        let x = Math.random()*canvas.width;
+        let y = Math.random()*canvas.height;
+        c.beginPath(); c.moveTo(x,y); c.lineTo(x-100, y); c.stroke();
+    }
+}
+
+function drawPlaneBody(c, fType, wType, eType, fuel) {
+    const f = PARTS.fuselage[fType] || PARTS.fuselage.medium;
+    const w = PARTS.wings[wType] || PARTS.wings.glider;
+
+    c.lineCap = 'round'; c.lineJoin = 'round'; c.lineWidth = 3; c.strokeStyle = "#333";
+
+    c.fillStyle = w.color; c.save(); c.scale(w.scale, w.scale); c.translate(5,-5);
+    let pw = new Path2D(w.path); c.fill(pw); c.stroke(pw); c.restore();
+
+    c.fillStyle = f.color; c.save(); c.scale(f.scale, f.scale);
+    let pf = new Path2D(f.path); c.fill(pf); c.stroke(pf); c.restore();
+
+    c.fillStyle = w.color; c.save(); c.scale(w.scale, w.scale);
+    c.fill(pw); c.stroke(pw); c.restore();
+
+    c.fillStyle = "#80deea"; c.beginPath(); c.arc(25, -5, 10, 0, Math.PI*2); c.fill(); c.stroke();
+}
+
+function updateHUD() {
+    if (gameState !== 'flying') return;
+    document.getElementById('hud-alt').innerText = (-plane.y).toFixed(1);
+    document.getElementById('hud-spd').innerText = (Math.sqrt(plane.vx**2 + plane.vy**2) * 3.6).toFixed(0);
+    document.getElementById('hud-dist').innerText = plane.x.toFixed(0);
+    let aoa = ((-plane.angle + Math.atan2(plane.vy, plane.vx)) * 180 / Math.PI).toFixed(1);
+    document.getElementById('hud-aoa').innerText = aoa;
+}
+
+function gameLoop(timestamp) {
+    let dt = (timestamp - lastTime) / 1000;
+    if (dt > 0.1) dt = 0.1;
+    lastTime = timestamp;
+
+    if (gameState === 'flying') {
+        updatePhysics(dt);
+    }
+    draw();
+    requestAnimationFrame(gameLoop);
+}
+
+// --- DETAILED AI ANALYSIS ---
+
+function endFlight() {
+    gameState = 'report';
+    document.getElementById('hud').classList.add('hidden');
+    document.getElementById('controls-hint').classList.add('hidden');
+    document.getElementById('wind-indicator').classList.add('hidden');
+    generateReport();
+    document.getElementById('report').classList.remove('hidden');
+}
+
+function generateReport() {
+    const content = document.getElementById('report-content');
+    const scoreEl = document.getElementById('report-score');
+    let html = "";
+    let score = 50; 
+    let hints = [];
+
+    const glideRatio = (flightData.distance / 50).toFixed(1); // 50m start height
+    const totalMass = plane.mass;
+    const wingArea = plane.wingArea;
+    const wingLoading = totalMass / wingArea; // kg/m2
+    const configName = `${PARTS.fuselage[plane.config.fuselage].name} + ${PARTS.wings[plane.config.wings].name}`;
+
+    html += `<div class='analysis-block'>
+        <strong>📊 飛行數據紀錄</strong><br>
+        滑翔距離: <strong>${flightData.distance.toFixed(1)} m</strong><br>
+        滑翔比 (L/D): 1 : ${glideRatio} (每下降1米前進${glideRatio}米)<br>
+        滯空時間: ${flightData.flightTime.toFixed(1)} 秒
+    </div>`;
+
+    // 1. Wing Loading Analysis
+    html += `<div class='analysis-block'>
+        <span class='concept-tag'>物理概念: 翼負荷 (Wing Loading)</span><br>
+        您的數值: ${wingLoading.toFixed(1)} kg/m²<br>`;
+    
+    if (wingLoading < 10) {
+        html += "👉 <strong>極低負荷</strong>：飛機像羽毛一樣飄浮，適合微風，但在強風中容易不穩定。";
+        score += 10;
+    } else if (wingLoading >= 10 && wingLoading <= 20) {
+        html += "👉 <strong>理想負荷</strong>：這是手擲滑翔機的黃金比例！";
+        score += 20;
+    } else {
+        html += "👉 <strong>過高負荷</strong>：飛機太重或翅膀太小，像石頭一樣掉下來。沒有引擎時，這是不利因素。";
+        score -= 20;
+    }
+    html += "</div>";
+
+    // 2. Component Synergy Analysis
+    const f = plane.config.fuselage;
+    const w = plane.config.wings;
+
+    if (f === 'heavy' || f === 'medium') {
+        hints.push("❌ <strong>位能浪費</strong>：在沒有引擎動力的情況下，重型機身消耗高度太快。建議更換「輕型機身」或「巴爾沙木」。");
+        score -= 20;
+    }
+
+    if (w === 'delta') {
+        hints.push("⚠️ <strong>設計衝突</strong>：三角翼 (Delta) 適合高速飛行。在這次慢速滑翔挑戰中，它無法產生足夠升力。");
+        score -= 10;
+    } else if (w === 'glider' || w === 'gull') {
+        hints.push("✅ <strong>最佳選擇</strong>：您選擇了高展弦比的機翼 (滑翔翼/海鷗翼)，這能有效降低誘導阻力，飛得更遠！");
+        score += 20;
+    }
+
+    // 3. Final Verdict
+    if (flightData.distance > 1200) {
+        hints.push("🌟 <strong>完美設計</strong>：您利用逆風增加了空速，並配合低阻力設計，達到了驚人的距離！");
+        score += 20;
+    } else if (flightData.distance < 300) {
+        hints.push("💡 <strong>改進建議</strong>：試試看「巴爾沙木機身」搭配「高展弦滑翔翼」，這通常是冠軍組合。");
+    }
+
+    html += "<h3>🤖 實驗總結與建議:</h3>";
+    hints.forEach(h => {
+        html += `<p class='analysis-block'>${h}</p>`;
+    });
+
+    if (score < 0) score = 0; if (score > 100) score = 100;
+    scoreEl.innerText = score;
+    content.innerHTML = html;
+}
+
+function resetToWorkshop() {
+    gameState = 'workshop';
+    document.getElementById('report').classList.add('hidden');
+    document.getElementById('workshop').classList.remove('hidden');
+}
+</script>
+</body>
+</html>
