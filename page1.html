@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1. 管理功能 - BAFS 2026</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .important-tag {
+            background-color: #fee2e2;
+            color: #b91c1c;
+            padding: 0.1rem 0.4rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            margin-left: 0.5rem;
+            vertical-align: middle;
+            border: 1px solid #fecaca;
+        }
+        .section-card {
+            background: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid #e5e7eb;
+        }
+        /* Sidebar Scrollbar */
+        .sidebar-scroll::-webkit-scrollbar { width: 6px; }
+        .sidebar-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
+        .sidebar-scroll::-webkit-scrollbar-thumb { background: #c7c7c7; border-radius: 3px; }
+        .sidebar-scroll::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+
+        /* Recite Mode Styles */
+        .recite-blur {
+            color: transparent !important;
+            text-shadow: 0 0 10px rgba(0,0,0,0.5);
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.3s ease;
+            position: relative;
+            background-color: rgba(0,0,0,0.03);
+            border-radius: 4px;
+        }
+        .recite-blur:hover {
+            text-shadow: 0 0 6px rgba(0,0,0,0.7);
+            background-color: rgba(0,0,0,0.06);
+        }
+        .recite-blur::after {
+            content: '點擊顯示';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 0.75rem;
+            color: #6b7280;
+            opacity: 0.7;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+        .recite-revealed {
+            color: inherit !important;
+            text-shadow: none !important;
+            background-color: transparent !important;
+        }
+        .recite-revealed::after {
+            display: none;
+        }
+        
+        /* Toggle Switch */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #2563eb;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #2563eb;
+        }
+        
+        /* Typography for notes */
+        .note-text {
+            line-height: 1.6;
+        }
+
+        /* Table Styles */
+        .custom-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .custom-table th, .custom-table td {
+            border: 1px solid #e5e7eb;
+            padding: 0.75rem;
+            text-align: left;
+        }
+        .custom-table th {
+            background-color: #f9fafb;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        /* Accordion Chevron Rotation */
+        .chevron-icon {
+            transition: transform 0.3s ease;
+        }
+        .group[aria-expanded="true"] .chevron-icon {
+            transform: rotate(180deg);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col text-gray-800">
+
+    <!-- Navbar -->
+    <nav class="bg-white shadow-md sticky top-0 z-50 h-16 flex-none">
+        <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8 h-full">
+            <div class="flex justify-between items-center h-full">
+                <div class="flex items-center">
+                    <button id="mobile-menu-btn" class="lg:hidden p-2 rounded-md text-gray-600 hover:text-blue-600 hover:bg-gray-100 focus:outline-none mr-2">
+                        <i data-lucide="menu" class="h-6 w-6"></i>
+                    </button>
+                    <a href="index.html" class="flex items-center hover:opacity-80 transition">
+                        <i data-lucide="book-open" class="h-8 w-8 text-blue-600 mr-2"></i>
+                        <span class="font-bold text-xl tracking-tight text-gray-900 hidden sm:block">HKDSE BAFS 2026</span>
+                        <span class="font-bold text-xl tracking-tight text-gray-900 sm:hidden">BAFS</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <!-- Recite Mode Toggle -->
+                    <div class="flex items-center mr-2">
+                        <span class="text-sm font-medium text-gray-700 mr-2 hidden sm:block">背書模式</span>
+                        <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                            <input type="checkbox" name="toggle" id="recite-toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer border-gray-300 transition-all duration-300 ease-in-out left-0 top-0"/>
+                            <label for="recite-toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer transition-colors duration-300"></label>
+                        </div>
+                    </div>
+
+                    <a href="index.html" class="text-gray-500 hover:text-blue-600 font-medium text-sm flex items-center bg-gray-100 px-3 py-1.5 rounded-full transition">
+                        <i data-lucide="home" class="w-4 h-4 mr-1"></i> 返回目錄
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="flex flex-grow overflow-hidden relative">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="bg-white w-64 border-r border-gray-200 flex-none hidden lg:block lg:relative absolute z-40 h-full overflow-y-auto sidebar-scroll transition-all duration-300 transform -translate-x-full lg:translate-x-0 top-0 left-0">
+            <div class="p-4">
+                <h2 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">課程導航</h2>
+                
+                <!-- B1 (Expanded by default for this page) -->
+                <div class="mb-4">
+                    <button class="w-full flex justify-between items-center text-left font-bold text-blue-700 mb-2 group hover:text-blue-800 transition focus:outline-none" onclick="toggleMenu('menu-b1', this)" aria-expanded="true">
+                        <span class="flex items-center"><i data-lucide="briefcase" class="w-4 h-4 mr-2"></i>B1 管理導論</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4 chevron-icon"></i>
+                    </button>
+                    <ul id="menu-b1" class="space-y-1 text-sm ml-2 border-l-2 border-gray-100 pl-2">
+                        <li><a href="page1.html" class="block py-1.5 px-2 rounded hover:bg-blue-50 text-gray-600 hover:text-blue-600">1. 管理功能</a></li>
+                        <li><a href="page2.html" class="block py-1.5 px-2 rounded hover:bg-blue-50 text-gray-600 hover:text-blue-600">2. 主要商業功能</a></li>
+                        <li><a href="page3.html" class="block py-1.5 px-2 rounded bg-blue-50 text-blue-600 font-medium">3. 中小型企業</a></li>
+                    </ul>
+                </div>
+
+                <!-- B2/B3 -->
+                <div class="mb-4">
+                    <button class="w-full flex justify-between items-center text-left font-bold text-green-700 mb-2 group hover:text-green-800 transition focus:outline-none" onclick="toggleMenu('menu-b2', this)" aria-expanded="false">
+                        <span class="flex items-center"><i data-lucide="users" class="w-4 h-4 mr-2"></i>B2/B3 人力資源</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4 chevron-icon"></i>
+                    </button>
+                    <ul id="menu-b2" class="space-y-1 text-sm ml-2 border-l-2 border-gray-100 pl-2 hidden">
+                        <li><a href="page4.html" class="block py-1.5 px-2 rounded hover:bg-green-50 text-gray-600 hover:text-green-600">1. 人力規劃和員工編制</a></li>
+                        <li><a href="page5.html" class="block py-1.5 px-2 rounded hover:bg-green-50 text-gray-600 hover:text-green-600">2. 員工考績</a></li>
+                        <li><a href="page6.html" class="block py-1.5 px-2 rounded hover:bg-green-50 text-gray-600 hover:text-green-600">3. 報酬管理</a></li>
+                        <li><a href="page7.html" class="block py-1.5 px-2 rounded hover:bg-green-50 text-gray-600 hover:text-green-600">4. 培訓和發展</a></li>
+                        <li><a href="page8.html" class="block py-1.5 px-2 rounded hover:bg-green-50 text-gray-600 hover:text-green-600">5. 發展優質人力資源</a></li>
+                    </ul>
+                </div>
+
+                <!-- B4-B6 -->
+                <div class="mb-4">
+                    <button class="w-full flex justify-between items-center text-left font-bold text-purple-700 mb-2 group hover:text-purple-800 transition focus:outline-none" onclick="toggleMenu('menu-b4', this)" aria-expanded="false">
+                        <span class="flex items-center"><i data-lucide="shopping-bag" class="w-4 h-4 mr-2"></i>B4-B6 市場營銷</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4 chevron-icon"></i>
+                    </button>
+                    <ul id="menu-b4" class="space-y-1 text-sm ml-2 border-l-2 border-gray-100 pl-2 hidden">
+                        <li><a href="page9.html" class="block py-1.5 px-2 rounded hover:bg-purple-50 text-gray-600 hover:text-purple-600">1. 市場營銷的角色</a></li>
+                        <li><a href="page10.html" class="block py-1.5 px-2 rounded hover:bg-purple-50 text-gray-600 hover:text-purple-600">2. 市場研究</a></li>
+                        <li><a href="page11.html" class="block py-1.5 px-2 rounded hover:bg-purple-50 text-gray-600 hover:text-purple-600">3. 消費者行為</a></li>
+                        <li><a href="page12.html" class="block py-1.5 px-2 rounded hover:bg-purple-50 text-gray-600 hover:text-purple-600">4. 市場區隔與定位</a></li>
+                        <li><a href="page13.html" class="block py-1.5 px-2 rounded hover:bg-purple-50 text-gray-600 hover:text-purple-600">5. 市場營銷策略 (一)</a></li>
+                        <li><a href="page14.html" class="block py-1.5 px-2 rounded hover:bg-purple-50 text-gray-600 hover:text-purple-600">6. 市場營銷策略 (二)</a></li>
+                        <li><a href="page15.html" class="block py-1.5 px-2 rounded hover:bg-purple-50 text-gray-600 hover:text-purple-600">7. 顧客關係管理</a></li>
+                    </ul>
+                </div>
+
+                <!-- B7-B9 -->
+                <div class="mb-4">
+                    <button class="w-full flex justify-between items-center text-left font-bold text-red-700 mb-2 group hover:text-red-800 transition focus:outline-none" onclick="toggleMenu('menu-b7', this)" aria-expanded="false">
+                        <span class="flex items-center"><i data-lucide="bar-chart-3" class="w-4 h-4 mr-2"></i>B7-B9 財務管理</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4 chevron-icon"></i>
+                    </button>
+                    <ul id="menu-b7" class="space-y-1 text-sm ml-2 border-l-2 border-gray-100 pl-2 hidden">
+                        <li><a href="page16.html" class="block py-1.5 px-2 rounded hover:bg-red-50 text-gray-600 hover:text-red-600">1. 財務分析</a></li>
+                        <li><a href="page17.html" class="block py-1.5 px-2 rounded hover:bg-red-50 text-gray-600 hover:text-red-600">2. 預算編製</a></li>
+                        <li><a href="page18.html" class="block py-1.5 px-2 rounded hover:bg-red-50 text-gray-600 hover:text-red-600">3. 融資方式</a></li>
+                        <li><a href="page19.html" class="block py-1.5 px-2 rounded hover:bg-red-50 text-gray-600 hover:text-red-600">4. 資本投資評估</a></li>
+                        <li><a href="page20.html" class="block py-1.5 px-2 rounded hover:bg-red-50 text-gray-600 hover:text-red-600">5. 營運資金管理</a></li>
+                        <li><a href="page21.html" class="block py-1.5 px-2 rounded hover:bg-red-50 text-gray-600 hover:text-red-600">6. 風險管理</a></li>
+                    </ul>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Overlay for mobile sidebar -->
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black opacity-50 z-30 hidden lg:hidden"></div>
+
+        <!-- Main Content -->
+        <main class="flex-grow overflow-y-auto h-full p-4 sm:p-8 bg-gray-50" id="content-area">
+            <div class="max-w-4xl mx-auto">
+                <!-- Header -->
+                <div class="mb-8 border-b pb-4">
+                    <div class="flex items-center text-sm text-gray-500 mb-2">
+                        <span>B1 管理導論</span>
+                        <i data-lucide="chevron-right" class="w-4 h-4 mx-2"></i>
+                        <span class="text-blue-600 font-medium">1. 管理功能</span>
+                    </div>
+                    <h1 class="text-3xl font-extrabold text-gray-900">管理功能</h1>
+                    <p class="text-gray-600 mt-2 recite-target">管理是一個透過各項功能以達成組織目標的過程。</p>
+                </div>
+
+                <!-- 1. 管理的意義及重要性 -->
+                <section class="mb-10">
+                    <h2 class="text-xl font-bold text-blue-800 mb-4 flex items-center">
+                        <span class="w-8 h-8 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center mr-3 text-sm">一</span>
+                        管理的意義及重要性
+                    </h2>
+                    
+                    <div class="section-card">
+                        <div class="grid md:grid-cols-1 gap-6">
+                            <!-- Definition -->
+                            <div>
+                                <h3 class="font-bold text-gray-800 mb-2">管理的定義</h3>
+                                <div class="bg-gray-50 p-3 rounded note-text text-gray-700">
+                                    <span class="recite-target">管理是透過計劃、組織、領導和控制四項功能以達成組織目標的過程。</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Manager -->
+                            <div>
+                                <h3 class="font-bold text-gray-800 mb-2">管理人員（或經理）</h3>
+                                <div class="bg-gray-50 p-3 rounded note-text text-gray-700">
+                                    <span class="recite-target">負責決定資源的分配，以及領導員工共同達成組織目標的人員。</span>
+                                </div>
+                            </div>
+
+                            <!-- Importance -->
+                            <div class="border-t pt-4">
+                                <h3 class="font-bold text-gray-800 mb-3">管理的重要性</h3>
+                                <div class="space-y-4">
+                                    <div class="bg-blue-50 p-3 rounded note-text">
+                                        <div class="font-bold text-blue-800 mb-1">管理的重要性（一）</div>
+                                        <span class="recite-target text-gray-700">幫助企業有效地達成組織目標：透過計劃功能制定有效的目標；透過組織功能安排工作給合適的員工；透過領導和控制功能確保員工按計劃完成工作。</span>
+                                    </div>
+                                    <div class="bg-blue-50 p-3 rounded note-text">
+                                        <div class="font-bold text-blue-800 mb-1">管理的重要性（二）</div>
+                                        <span class="recite-target text-gray-700">確保企業有效地使用資源：幫助企業善用有限資源（如人力、資金、機器和原料等），並將浪費和成本減至最少。</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 2. 計劃 (Planning) -->
+                <section class="mb-10">
+                    <h2 class="text-xl font-bold text-blue-800 mb-4 flex items-center">
+                        <span class="w-8 h-8 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center mr-3 text-sm">二</span>
+                        計劃 (Planning) 與良好目標的特點 <span class="important-tag"><i data-lucide="star" class="w-3 h-3 mr-1"></i>重點</span>
+                    </h2>
+
+                    <div class="section-card">
+                        <p class="recite-target text-gray-700 mb-4 italic">計劃是所有商業策略的基礎，為企業提供指引並作為監控標準。</p>
+                        
+                        <div class="mb-6">
+                            <h4 class="font-bold text-gray-800 mb-2 border-l-4 border-blue-500 pl-3">計劃的重要性</h4>
+                            <ol class="list-decimal list-inside text-gray-700 space-y-2 ml-2 note-text">
+                                <li class="recite-target">幫助管理人員尋找機會和應對挑戰。</li>
+                                <li class="recite-target">為員工提供指引（激勵員工朝着目標努力工作）。</li>
+                                <li class="recite-target">作為監控工作進度的標準（讓管理人員評估員工進度）。</li>
+                            </ol>
+                        </div>
+
+                        <div class="mb-6">
+                            <h4 class="font-bold text-gray-800 mb-3 border-l-4 border-blue-500 pl-3">計劃的過程</h4>
+                            <div class="space-y-3">
+                                <div class="flex items-start">
+                                    <div class="step-circle">1</div>
+                                    <div class="pt-1 note-text w-full"><span class="recite-target font-bold text-gray-800">訂立目標：</span><br><span class="recite-target text-gray-700">訂立目標（決定企業想要達到的目標）。</span></div>
+                                </div>
+                                <div class="flex items-start">
+                                    <div class="step-circle">2</div>
+                                    <div class="pt-1 note-text w-full"><span class="recite-target font-bold text-gray-800">收集資料：</span><br><span class="recite-target text-gray-700">收集有用和相關的資料（分析企業資源及收集有助達成目標的資料）。</span></div>
+                                </div>
+                                <div class="flex items-start">
+                                    <div class="step-circle">3</div>
+                                    <div class="pt-1 note-text w-full"><span class="recite-target font-bold text-gray-800">評估方案：</span><br><span class="recite-target text-gray-700">評估各個計劃，選出最佳方案（選出能最有效地達成目標的方案）。</span></div>
+                                </div>
+                                <div class="flex items-start">
+                                    <div class="step-circle">4</div>
+                                    <div class="pt-1 note-text w-full"><span class="recite-target font-bold text-gray-800">制定計劃：</span><br><span class="recite-target text-gray-700">制定計劃（制定執行計劃的時間表並分配資源）。</span></div>
+                                </div>
+                                <div class="flex items-start">
+                                    <div class="step-circle">5</div>
+                                    <div class="pt-1 note-text w-full"><span class="recite-target font-bold text-gray-800">執行計劃：</span><br><span class="recite-target text-gray-700">執行計劃（按計劃展開實際行動，並檢討目標是否達成）。</span></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-red-50 border border-red-100 rounded-lg p-4">
+                            <h4 class="font-bold text-red-800 mb-3 flex items-center">
+                                <i data-lucide="target" class="w-5 h-5 mr-2"></i>
+                                良好目標的五項特點（SMART 原則） <span class="important-tag">重點</span>
+                            </h4>
+                            <ul class="space-y-3 note-text">
+                                <li class="bg-white p-3 rounded shadow-sm">
+                                    <span class="recite-target text-red-600 font-bold block mb-1">1. 具體（Specific）</span>
+                                    <span class="recite-target text-gray-700">清楚明確說明要達到的結果，不可籠統空泛。</span>
+                                </li>
+                                <li class="bg-white p-3 rounded shadow-sm">
+                                    <span class="recite-target text-red-600 font-bold block mb-1">2. 可量度（Measurable）</span>
+                                    <span class="recite-target text-gray-700">應可量化或以數字形式表達，以量度實際表現。</span>
+                                </li>
+                                <li class="bg-white p-3 rounded shadow-sm">
+                                    <span class="recite-target text-red-600 font-bold block mb-1">3. 可達到（Attainable）</span>
+                                    <span class="recite-target text-gray-700">既富挑戰性，又可憑着額外的努力達成。</span>
+                                </li>
+                                <li class="bg-white p-3 rounded shadow-sm">
+                                    <span class="recite-target text-red-600 font-bold block mb-1">4. 相關（Relevant）</span>
+                                    <span class="recite-target text-gray-700">針對影響企業業績的關鍵因素。</span>
+                                </li>
+                                <li class="bg-white p-3 rounded shadow-sm">
+                                    <span class="recite-target text-red-600 font-bold block mb-1">5. 設有時限（Time-based）</span>
+                                    <span class="recite-target text-gray-700">應就達成目標設定合理的時限。</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 3. 組織 (Organizing) -->
+                <section class="mb-10">
+                    <h2 class="text-xl font-bold text-blue-800 mb-4 flex items-center">
+                        <span class="w-8 h-8 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center mr-3 text-sm">三</span>
+                        組織 (Organizing) <span class="important-tag"><i data-lucide="star" class="w-3 h-3 mr-1"></i>重點</span>
+                    </h2>
+                    
+                    <div class="section-card">
+                        <p class="mb-4 text-gray-700 recite-target">組織是決定須要做哪些工作，以及如何把工作組合起來的過程。</p>
+
+                        <div class="mb-6">
+                            <h4 class="font-bold text-gray-800 mb-3 border-l-4 border-blue-500 pl-3">管理層級</h4>
+                            <ul class="space-y-3 note-text">
+                                <li class="bg-gray-50 p-3 rounded">
+                                    <span class="recite-target font-bold text-blue-700 block mb-1">1. 高層管理人員</span>
+                                    <span class="recite-target text-gray-700">訂立公司的整體目標和方向（制定願景、使命、政策及全公司決策）。</span>
+                                </li>
+                                <li class="bg-gray-50 p-3 rounded">
+                                    <span class="recite-target font-bold text-blue-600 block mb-1">2. 中層管理人員</span>
+                                    <span class="recite-target text-gray-700">擔當高層與前線之間的橋樑（執行計劃及決策、解決營運問題）。</span>
+                                </li>
+                                <li class="bg-gray-50 p-3 rounded">
+                                    <span class="recite-target font-bold text-blue-500 block mb-1">3. 前線管理人員</span>
+                                    <span class="recite-target text-gray-700">負責公司的日常營運（處理顧客投訴、監督員工）。</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="mb-6">
+                            <div class="bg-red-50 p-4 rounded-lg border border-red-100">
+                                <h4 class="font-bold text-red-800 mb-2 flex items-center">組織結構類型比較 <span class="important-tag ml-auto">重點</span></h4>
+                                <div class="space-y-3 note-text">
+                                    <div>
+                                        <div class="recite-target font-bold text-gray-800">● 高架式結構</div>
+                                        <p class="recite-target text-gray-700">管理層級較多、控制幅度較窄、溝通效率較慢、決策速度較低。</p>
+                                    </div>
+                                    <div class="border-t border-red-200 pt-2">
+                                        <div class="recite-target font-bold text-gray-800">● 扁平式結構</div>
+                                        <p class="recite-target text-gray-700">管理層級較少、控制幅度較廣、溝通效率較快、決策速度較高、員工享有較大自主權。</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-6">
+                             <div class="bg-red-50 p-4 rounded-lg border border-red-100">
+                                <h4 class="font-bold text-red-800 mb-2 flex items-center">職權類型 <span class="important-tag ml-auto">重點</span></h4>
+                                <div class="space-y-3 note-text">
+                                    <div>
+                                        <div class="recite-target font-bold text-gray-800">1. 直線職權</div>
+                                        <p class="recite-target text-gray-700">企業授予較上級（上司）向直屬下級（下屬）發出工作指令的權力，衍生出從屬關係。</p>
+                                    </div>
+                                    <div class="border-t border-red-200 pt-2">
+                                        <div class="recite-target font-bold text-gray-800">2. 幕僚職權</div>
+                                        <p class="recite-target text-gray-700">企業授予特定工作職位為其他部門提供支援、協助和意見的權力，衍生出諮詢關係。</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white border border-gray-200 rounded-lg p-4">
+                             <h4 class="font-bold text-gray-800 mb-3 flex items-center">部門劃分方法 <span class="important-tag ml-auto">重點</span></h4>
+                             <div class="space-y-3 note-text">
+                                 <div class="p-3 bg-gray-50 rounded">
+                                     <div class="recite-target font-bold text-blue-600 mb-1">1. 按功能劃分</div>
+                                     <div class="recite-target text-gray-700">部門由功能相近的職位組成（適用於小型公司）。</div>
+                                 </div>
+                                 <div class="p-3 bg-gray-50 rounded">
+                                     <div class="recite-target font-bold text-blue-600 mb-1">2. 按產品劃分</div>
+                                     <div class="recite-target text-gray-700">部門由負責生產或售賣同類產品的職位組成。</div>
+                                 </div>
+                                 <div class="p-3 bg-gray-50 rounded">
+                                     <div class="recite-target font-bold text-blue-600 mb-1">3. 按地區劃分</div>
+                                     <div class="recite-target text-gray-700">部門由同一地區內的職位組成（適用於跨國公司）。</div>
+                                 </div>
+                             </div>
+                        </div>
+                    </div>
+                </section>
+
+                 <!-- 4. 領導 (Leading) -->
+                 <section class="mb-10">
+                    <h2 class="text-xl font-bold text-blue-800 mb-4 flex items-center">
+                        <span class="w-8 h-8 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center mr-3 text-sm">四</span>
+                        領導 (Leading) <span class="important-tag"><i data-lucide="star" class="w-3 h-3 mr-1"></i>重點</span>
+                    </h2>
+                    <div class="section-card">
+                        <p class="recite-target mb-4 text-gray-700">領導是引導、指示和激勵員工達成組織目標的過程。</p>
+                        <div class="grid md:grid-cols-1 gap-4">
+                            <!-- Style 1 -->
+                            <div class="bg-red-50 p-4 rounded-lg border border-red-100 group">
+                                <div class="flex justify-between items-center mb-2">
+                                    <h4 class="recite-target font-bold text-gray-900">獨裁式領導</h4>
+                                    <span class="important-tag">重點</span>
+                                </div>
+                                <p class="recite-target text-gray-700 note-text">管理人員不讓下屬參與決策，把所有權力集中在自己手上，自行作出所有決策，下屬只能服從指令。</p>
+                            </div>
+                            <!-- Style 2 -->
+                            <div class="bg-red-50 p-4 rounded-lg border border-red-100 group">
+                                <div class="flex justify-between items-center mb-2">
+                                    <h4 class="recite-target font-bold text-gray-900">參與式領導</h4>
+                                    <span class="important-tag">重點</span>
+                                </div>
+                                <p class="recite-target text-gray-700 note-text">管理人員會與下屬分享權力，讓下屬參與決策，願意接受別人的想法和建議。</p>
+                            </div>
+                            <!-- Style 3 -->
+                            <div class="bg-red-50 p-4 rounded-lg border border-red-100 group">
+                                <div class="flex justify-between items-center mb-2">
+                                    <h4 class="recite-target font-bold text-gray-900">自由放任式領導</h4>
+                                    <span class="important-tag">重點</span>
+                                </div>
+                                <p class="recite-target text-gray-700 note-text">管理人員會授權予下屬，讓下屬自行作出決策。管理人員只會提供支援，不向員工提供指示。</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 5. 控制 (Controlling) -->
+                <section class="mb-10">
+                    <h2 class="text-xl font-bold text-blue-800 mb-4 flex items-center">
+                        <span class="w-8 h-8 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center mr-3 text-sm">五</span>
+                        控制 (Controlling) <span class="important-tag"><i data-lucide="star" class="w-3 h-3 mr-1"></i>重點</span>
+                    </h2>
+                    <div class="section-card">
+                        <p class="recite-target mb-4 text-gray-700">控制是對各項活動進行監控，以確保活動按計劃完成的過程。</p>
+                        <div class="space-y-4">
+                            <div class="flex flex-col sm:flex-row">
+                                <span class="font-bold text-blue-600 w-32 flex-shrink-0 mb-1 sm:mb-0">第 1 步：<br><span class="recite-target text-gray-800">訂立表現標準</span></span>
+                                <div class="recite-target text-gray-700 note-text">決定要控制哪些活動，並訂立清晰、具體和可量度的標準。</div>
+                            </div>
+                            <div class="flex flex-col sm:flex-row">
+                                <span class="font-bold text-blue-600 w-32 flex-shrink-0 mb-1 sm:mb-0">第 2 步：<br><span class="recite-target text-gray-800">量度實際表現</span></span>
+                                <div class="recite-target text-gray-700 note-text">就受控活動收集資料，並以數字量度實際表現。</div>
+                            </div>
+                            <div class="flex flex-col sm:flex-row">
+                                <span class="font-bold text-blue-600 w-32 flex-shrink-0 mb-1 sm:mb-0">第 3 步：<br><span class="recite-target text-gray-800">比較實際表現與標準</span></span>
+                                <div class="recite-target text-gray-700 note-text">判斷實際表現是否可以接受或是否嚴重偏離標準。</div>
+                            </div>
+                            <div class="flex flex-col sm:flex-row">
+                                <span class="font-bold text-blue-600 w-32 flex-shrink-0 mb-1 sm:mb-0">第 4 步：<br><span class="recite-target text-gray-800">分析差異並採取糾正行動</span></span>
+                                <div class="recite-target text-gray-700 note-text">找出出現問題的原因，然後採取行動把不濟的表現糾正。若標準不符合現實，則應修訂表現標準。</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 6. 有效管理的原則 -->
+                <section class="mb-10">
+                    <h2 class="text-xl font-bold text-blue-800 mb-4 flex items-center">
+                        <span class="w-8 h-8 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center mr-3 text-sm">六</span>
+                        有效管理的原則 <span class="important-tag"><i data-lucide="star" class="w-3 h-3 mr-1"></i>重點</span>
+                    </h2>
+                    <div class="section-card bg-gradient-to-br from-white to-red-50 border-red-100">
+                        <p class="recite-target mb-4 text-gray-700">管理人員可透過採用這些原則來提升企業的效能和效率。</p>
+                        <div class="grid gap-4 note-text">
+                            <div class="bg-white p-3 rounded shadow-sm border-l-4 border-red-400">
+                                <div class="flex justify-between"><h4 class="recite-target font-bold text-gray-800">1. 分工</h4> <span class="important-tag">重點</span></div>
+                                <p class="recite-target text-gray-700 mt-1">生產過程分拆成多個工序，每名員工只專門負責其中一項或幾項工序，以達到熟能生巧、提升效率、節省時間及促進自動化。</p>
+                            </div>
+                            <div class="bg-white p-3 rounded shadow-sm border-l-4 border-red-400">
+                                <div class="flex justify-between"><h4 class="recite-target font-bold text-gray-800">2. 統一命令</h4> <span class="important-tag">重點</span></div>
+                                <p class="recite-target text-gray-700 mt-1">每名員工只聽從一名上司的指揮，並只向他一人匯報。這明確界定了企業的命令線。</p>
+                            </div>
+                            <div class="bg-white p-3 rounded shadow-sm border-l-4 border-red-400">
+                                <div class="flex justify-between"><h4 class="recite-target font-bold text-gray-800">3. 統一的方向</h4> <span class="important-tag">重點</span></div>
+                                <p class="recite-target text-gray-700 mt-1">企業內每個計劃都只由一名管理人員統領；所有擁有相同目標的活動都應納入同一項計劃內。</p>
+                            </div>
+                            <div class="bg-white p-3 rounded shadow-sm border-l-4 border-red-400">
+                                <div class="flex justify-between"><h4 class="recite-target font-bold text-gray-800">4. 平衡職權和責任</h4> <span class="important-tag">重點</span></div>
+                                <p class="recite-target text-gray-700 mt-1">職權與責任是相輔相成的，而且兩者必須平衡。管理者可授權予下屬（將職權與責任轉移），但管理者仍須對最終結果負責。</p>
+                            </div>
+                            <div class="bg-white p-3 rounded shadow-sm border-l-4 border-red-400">
+                                <div class="flex justify-between"><h4 class="recite-target font-bold text-gray-800">5. 目標管理</h4> <span class="important-tag">重點</span></div>
+                                <p class="recite-target text-gray-700 mt-1">把組織的整體目標轉化成個別單位、部門和員工的工作目標。由管理人員和下屬一起訂立目標。</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Navigation Buttons -->
+                <div class="flex justify-between mt-8 mb-12">
+                    <a href="index.html" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium flex items-center transition">
+                        <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i> 返回目錄
+                    </a>
+                    <a href="page2.html" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium flex items-center shadow-lg transition transform hover:-translate-y-0.5">
+                        下一課題：主要商業功能 <i data-lucide="arrow-right" class="w-4 h-4 ml-2"></i>
+                    </a>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+     <script>
+        lucide.createIcons();
+
+        // Mobile Sidebar Toggle Logic
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+
+        mobileMenuBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('hidden');
+            sidebar.classList.toggle('-translate-x-full');
+            if (!sidebar.classList.contains('hidden')) {
+                overlay.classList.remove('hidden');
+            } else {
+                overlay.classList.add('hidden');
+            }
+        });
+
+        overlay.addEventListener('click', () => {
+            sidebar.classList.add('hidden');
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('hidden');
+        });
+
+        // Sidebar Accordion Logic
+        function toggleMenu(menuId, btn) {
+            const menu = document.getElementById(menuId);
+            const isExpanded = btn.getAttribute('aria-expanded') === 'true';
+            
+            // Toggle current menu
+            if (isExpanded) {
+                menu.classList.add('hidden');
+                btn.setAttribute('aria-expanded', 'false');
+            } else {
+                menu.classList.remove('hidden');
+                btn.setAttribute('aria-expanded', 'true');
+            }
+        }
+
+        // Recite Mode Logic
+        const reciteToggle = document.getElementById('recite-toggle');
+        const contentArea = document.getElementById('content-area');
+        
+        reciteToggle.addEventListener('change', function() {
+            const targets = document.querySelectorAll('.recite-target');
+            
+            if (this.checked) {
+                targets.forEach(el => {
+                    el.classList.add('recite-blur');
+                    el.classList.remove('recite-revealed');
+                });
+            } else {
+                targets.forEach(el => {
+                    el.classList.remove('recite-blur');
+                    el.classList.remove('recite-revealed');
+                });
+            }
+        });
+
+        // Click to reveal logic
+        contentArea.addEventListener('click', function(e) {
+            let target = e.target;
+            // Handle if clicking on child element within blur target
+            if (target.closest('.recite-blur')) {
+                target.closest('.recite-blur').classList.toggle('recite-revealed');
+            }
+        });
+    </script>
+</body>
+</html>
