@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5. 發展優質人力資源 - BAFS 2026</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .important-tag {
+            background-color: #fee2e2;
+            color: #b91c1c;
+            padding: 0.1rem 0.4rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            margin-left: 0.5rem;
+            vertical-align: middle;
+            border: 1px solid #fecaca;
+        }
+        .section-card {
+            background: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid #e5e7eb;
+        }
+        /* Sidebar Scrollbar */
+        .sidebar-scroll::-webkit-scrollbar { width: 6px; }
+        .sidebar-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
+        .sidebar-scroll::-webkit-scrollbar-thumb { background: #c7c7c7; border-radius: 3px; }
+        .sidebar-scroll::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+
+        /* Recite Mode Styles */
+        .recite-blur {
+            color: transparent !important;
+            text-shadow: 0 0 10px rgba(0,0,0,0.5);
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.3s ease;
+            position: relative;
+            background-color: rgba(0,0,0,0.03);
+            border-radius: 4px;
+        }
+        .recite-blur:hover {
+            text-shadow: 0 0 6px rgba(0,0,0,0.7);
+            background-color: rgba(0,0,0,0.06);
+        }
+        .recite-blur::after {
+            content: '點擊顯示';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 0.75rem;
+            color: #6b7280;
+            opacity: 0.7;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+        .recite-revealed {
+            color: inherit !important;
+            text-shadow: none !important;
+            background-color: transparent !important;
+        }
+        .recite-revealed::after {
+            display: none;
+        }
+        
+        /* Toggle Switch */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #2563eb;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #2563eb;
+        }
+        
+        /* Typography for notes */
+        .note-text {
+            line-height: 1.6;
+        }
+
+        /* Table Styles */
+        .custom-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .custom-table th, .custom-table td {
+            border: 1px solid #e5e7eb;
+            padding: 0.75rem;
+            text-align: left;
+            vertical-align: top;
+        }
+        .custom-table th {
+            background-color: #f9fafb;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        /* Accordion Chevron Rotation */
+        .chevron-icon {
+            transition: transform 0.3s ease;
+        }
+        .group[aria-expanded="true"] .chevron-icon {
+            transform: rotate(180deg);
+        }
+
+        /* Maslow Pyramid Styles */
+        .maslow-level {
+            transition: all 0.3s ease;
+        }
+        .maslow-level:hover {
+            transform: scale(1.01);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col text-gray-800">
+
+    <!-- Navbar -->
+    <nav class="bg-white shadow-md sticky top-0 z-50 h-16 flex-none">
+        <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8 h-full">
+            <div class="flex justify-between items-center h-full">
+                <div class="flex items-center">
+                    <button id="mobile-menu-btn" class="lg:hidden p-2 rounded-md text-gray-600 hover:text-blue-600 hover:bg-gray-100 focus:outline-none mr-2">
+                        <i data-lucide="menu" class="h-6 w-6"></i>
+                    </button>
+                    <a href="index.html" class="flex items-center hover:opacity-80 transition">
+                        <i data-lucide="book-open" class="h-8 w-8 text-blue-600 mr-2"></i>
+                        <span class="font-bold text-xl tracking-tight text-gray-900 hidden sm:block">HKDSE BAFS 2026</span>
+                        <span class="font-bold text-xl tracking-tight text-gray-900 sm:hidden">BAFS</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <!-- Recite Mode Toggle -->
+                    <div class="flex items-center mr-2">
+                        <span class="text-sm font-medium text-gray-700 mr-2 hidden sm:block">背書模式</span>
+                        <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                            <input type="checkbox" name="toggle" id="recite-toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer border-gray-300 transition-all duration-300 ease-in-out left-0 top-0"/>
+                            <label for="recite-toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer transition-colors duration-300"></label>
+                        </div>
+                    </div>
+
+                    <a href="index.html" class="text-gray-500 hover:text-blue-600 font-medium text-sm flex items-center bg-gray-100 px-3 py-1.5 rounded-full transition">
+                        <i data-lucide="home" class="w-4 h-4 mr-1"></i> 返回目錄
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="flex flex-grow overflow-hidden relative">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="bg-white w-64 border-r border-gray-200 flex-none hidden lg:block lg:relative absolute z-40 h-full overflow-y-auto sidebar-scroll transition-all duration-300 transform -translate-x-full lg:translate-x-0 top-0 left-0">
+            <div class="p-4">
+                <h2 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">課程導航</h2>
+                
+                <!-- B1 -->
+                <div class="mb-4">
+                    <button class="w-full flex justify-between items-center text-left font-bold text-blue-700 mb-2 group hover:text-blue-800 transition focus:outline-none" onclick="toggleMenu('menu-b1', this)" aria-expanded="false">
+                        <span class="flex items-center"><i data-lucide="briefcase" class="w-4 h-4 mr-2"></i>B1 管理導論</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4 chevron-icon"></i>
+                    </button>
+                    <ul id="menu-b1" class="space-y-1 text-sm ml-2 border-l-2 border-gray-100 pl-2 hidden">
+                        <li><a href="page1.html" class="block py-1.5 px-2 rounded hover:bg-blue-50 text-gray-600 hover:text-blue-600">1. 管理功能</a></li>
+                        <li><a href="page2.html" class="block py-1.5 px-2 rounded hover:bg-blue-50 text-gray-600 hover:text-blue-600">2. 主要商業功能</a></li>
+                        <li><a href="page3.html" class="block py-1.5 px-2 rounded hover:bg-blue-50 text-gray-600 hover:text-blue-600">3. 中小型企業</a></li>
+                    </ul>
+                </div>
+
+                <!-- B2/B3 (Expanded by default) -->
+                <div class="mb-4">
+                    <button class="w-full flex justify-between items-center text-left font-bold text-green-700 mb-2 group hover:text-green-800 transition focus:outline-none" onclick="toggleMenu('menu-b2', this)" aria-expanded="true">
+                        <span class="flex items-center"><i data-lucide="users" class="w-4 h-4 mr-2"></i>B2/B3 人力資源</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4 chevron-icon"></i>
+                    </button>
+                    <ul id="menu-b2" class="space-y-1 text-sm ml-2 border-l-2 border-gray-100 pl-2">
+                        <li><a href="page4.html" class="block py-1.5 px-2 rounded hover:bg-green-50 text-gray-600 hover:text-green-600">1. 人力規劃和員工編制</a></li>
+                        <li><a href="page5.html" class="block py-1.5 px-2 rounded hover:bg-green-50 text-gray-600 hover:text-green-600">2. 員工考績</a></li>
+                        <li><a href="page6.html" class="block py-1.5 px-2 rounded hover:bg-green-50 text-gray-600 hover:text-green-600">3. 報酬管理</a></li>
+                        <li><a href="page7.html" class="block py-1.5 px-2 rounded hover:bg-green-50 text-gray-600 hover:text-green-600">4. 培訓和發展</a></li>
+                        <li><a href="page8.html" class="block py-1.5 px-2 rounded bg-green-50 text-green-600 font-medium">5. 發展優質人力資源</a></li>
+                    </ul>
+                </div>
+
+                <!-- B4-B6 -->
+                <div class="mb-4">
+                    <button class="w-full flex justify-between items-center text-left font-bold text-purple-700 mb-2 group hover:text-purple-800 transition focus:outline-none" onclick="toggleMenu('menu-b4', this)" aria-expanded="false">
+                        <span class="flex items-center"><i data-lucide="shopping-bag" class="w-4 h-4 mr-2"></i>B4-B6 市場營銷</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4 chevron-icon"></i>
+                    </button>
+                    <ul id="menu-b4" class="space-y-1 text-sm ml-2 border-l-2 border-gray-100 pl-2 hidden">
+                        <li><a href="page9.html" class="block py-1.5 px-2 rounded hover:bg-purple-50 text-gray-600 hover:text-purple-600">1. 市場營銷的角色</a></li>
+                        <li><a href="page10.html" class="block py-1.5 px-2 rounded hover:bg-purple-50 text-gray-600 hover:text-purple-600">2. 市場研究</a></li>
+                        <li><a href="page11.html" class="block py-1.5 px-2 rounded hover:bg-purple-50 text-gray-600 hover:text-purple-600">3. 消費者行為</a></li>
+                        <li><a href="page12.html" class="block py-1.5 px-2 rounded hover:bg-purple-50 text-gray-600 hover:text-purple-600">4. 市場區隔與定位</a></li>
+                        <li><a href="page13.html" class="block py-1.5 px-2 rounded hover:bg-purple-50 text-gray-600 hover:text-purple-600">5. 市場營銷策略 (一)</a></li>
+                        <li><a href="page14.html" class="block py-1.5 px-2 rounded hover:bg-purple-50 text-gray-600 hover:text-purple-600">6. 市場營銷策略 (二)</a></li>
+                        <li><a href="page15.html" class="block py-1.5 px-2 rounded hover:bg-purple-50 text-gray-600 hover:text-purple-600">7. 顧客關係管理</a></li>
+                    </ul>
+                </div>
+
+                <!-- B7-B9 -->
+                <div class="mb-4">
+                    <button class="w-full flex justify-between items-center text-left font-bold text-red-700 mb-2 group hover:text-red-800 transition focus:outline-none" onclick="toggleMenu('menu-b7', this)" aria-expanded="false">
+                        <span class="flex items-center"><i data-lucide="bar-chart-3" class="w-4 h-4 mr-2"></i>B7-B9 財務管理</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4 chevron-icon"></i>
+                    </button>
+                    <ul id="menu-b7" class="space-y-1 text-sm ml-2 border-l-2 border-gray-100 pl-2 hidden">
+                        <li><a href="page16.html" class="block py-1.5 px-2 rounded hover:bg-red-50 text-gray-600 hover:text-red-600">1. 財務分析</a></li>
+                        <li><a href="page17.html" class="block py-1.5 px-2 rounded hover:bg-red-50 text-gray-600 hover:text-red-600">2. 預算編製</a></li>
+                        <li><a href="page18.html" class="block py-1.5 px-2 rounded hover:bg-red-50 text-gray-600 hover:text-red-600">3. 融資方式</a></li>
+                        <li><a href="page19.html" class="block py-1.5 px-2 rounded hover:bg-red-50 text-gray-600 hover:text-red-600">4. 資本投資評估</a></li>
+                        <li><a href="page20.html" class="block py-1.5 px-2 rounded hover:bg-red-50 text-gray-600 hover:text-red-600">5. 營運資金管理</a></li>
+                        <li><a href="page21.html" class="block py-1.5 px-2 rounded hover:bg-red-50 text-gray-600 hover:text-red-600">6. 風險管理</a></li>
+                    </ul>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Overlay for mobile sidebar -->
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black opacity-50 z-30 hidden lg:hidden"></div>
+
+        <!-- Main Content -->
+        <main class="flex-grow overflow-y-auto h-full p-4 sm:p-8 bg-gray-50" id="content-area">
+            <div class="max-w-4xl mx-auto">
+                <!-- Header -->
+                <div class="mb-8 border-b pb-4">
+                    <div class="flex items-center text-sm text-gray-500 mb-2">
+                        <span>B2/B3 人力資源管理</span>
+                        <i data-lucide="chevron-right" class="w-4 h-4 mx-2"></i>
+                        <span class="text-green-600 font-medium">5. 發展優質人力資源</span>
+                    </div>
+                    <h1 class="text-3xl font-extrabold text-gray-900">發展優質人力資源</h1>
+                    <p class="text-gray-600 mt-2 recite-target">應用激勵理論（馬斯洛、赫茨伯格、麥格雷戈）與建議內部溝通方式以加強僱員關係。</p>
+                </div>
+
+                <!-- Intro Alert -->
+                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-8">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i data-lucide="trending-up" class="h-5 w-5 text-yellow-500"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-yellow-700">
+                                <span class="font-bold">DSE 趨勢分析：</span>
+                                根據趨勢分析，馬斯洛、赫茨伯格及麥格雷戈的理論是 DSE 試卷二中極高頻率出現的應用題型。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 1. 激勵的定義與重要性 -->
+                <section class="mb-10">
+                    <h2 class="text-xl font-bold text-green-800 mb-4 flex items-center">
+                        <span class="w-8 h-8 bg-green-100 text-green-600 rounded-lg flex items-center justify-center mr-3 text-sm">一</span>
+                        激勵的定義與重要性 (5.2)
+                    </h2>
+                    
+                    <div class="section-card">
+                        <p class="text-gray-700 mb-4 italic recite-target">激勵在工作場所主要涉及工作目標，對企業維持穩定性與生產力至關重要。</p>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="custom-table w-full">
+                                <thead>
+                                    <tr>
+                                        <th class="w-1/4">項目</th>
+                                        <th class="w-3/4">詳細內容（跟隨書中字眼）</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="bg-white">
+                                        <td class="font-medium text-green-700">激勵的定義</td>
+                                        <td><span class="recite-target">激勵是指激發個人努力達成目標的過程。</span></td>
+                                    </tr>
+                                    <tr class="bg-gray-50">
+                                        <td class="font-medium text-green-700">激勵的重要性</td>
+                                        <td><span class="recite-target">1. 受到激勵的僱員通常對工作感到滿意，並且願意努力工作，這有助企業減低缺勤率和員工流失率。<br>2. 受到激勵的僱員通常會有較佳的工作表現和較高的工作效率，這有助提升企業的生產力。</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 2. 激勵理論 -->
+                <section class="mb-10">
+                    <h2 class="text-xl font-bold text-green-800 mb-4 flex items-center">
+                        <span class="w-8 h-8 bg-green-100 text-green-600 rounded-lg flex items-center justify-center mr-3 text-sm">二</span>
+                        激勵理論 <span class="important-tag"><i data-lucide="star" class="w-3 h-3 mr-1"></i>重點</span>
+                    </h2>
+
+                    <div class="section-card">
+                        <!-- Maslow -->
+                        <div class="mb-12">
+                            <h4 class="font-bold text-gray-800 mb-4 border-l-4 border-green-500 pl-3">1. 馬斯洛的需要階梯理論 (5.3A)</h4>
+                            <p class="text-sm text-gray-600 mb-6">該理論指出人類的需要可分為五個層次，人們只會在滿足了較低層次的需要後，才有動機去滿足較高層次的需要。</p>
+                            
+                            <!-- Visual Pyramid -->
+                            <div class="flex flex-col items-center space-y-2 mb-6 w-full max-w-lg mx-auto">
+                                <div class="maslow-level w-[40%] bg-red-100 border border-red-300 rounded p-2 text-center text-sm shadow-sm relative group">
+                                    <span class="font-bold text-red-700 block">5. 自我實現需要</span>
+                                    <div class="hidden group-hover:block absolute z-10 bottom-full mb-2 left-1/2 -translate-x-1/2 w-64 bg-gray-800 text-white text-xs p-2 rounded shadow-lg">
+                                        渴望發揮全部潛能和展現獨特才華。
+                                    </div>
+                                </div>
+                                <div class="maslow-level w-[55%] bg-orange-100 border border-orange-300 rounded p-2 text-center text-sm shadow-sm relative group">
+                                    <span class="font-bold text-orange-700 block">4. 自我需要</span>
+                                    <div class="hidden group-hover:block absolute z-10 bottom-full mb-2 left-1/2 -translate-x-1/2 w-64 bg-gray-800 text-white text-xs p-2 rounded shadow-lg">
+                                        與成就感有關，對名譽、地位、認同和尊重的渴求。
+                                    </div>
+                                </div>
+                                <div class="maslow-level w-[70%] bg-yellow-100 border border-yellow-300 rounded p-2 text-center text-sm shadow-sm relative group">
+                                    <span class="font-bold text-yellow-700 block">3. 社交需要</span>
+                                    <div class="hidden group-hover:block absolute z-10 bottom-full mb-2 left-1/2 -translate-x-1/2 w-64 bg-gray-800 text-white text-xs p-2 rounded shadow-lg">
+                                        與他人互動的需要。
+                                    </div>
+                                </div>
+                                <div class="maslow-level w-[85%] bg-blue-100 border border-blue-300 rounded p-2 text-center text-sm shadow-sm relative group">
+                                    <span class="font-bold text-blue-700 block">2. 安全需要</span>
+                                    <div class="hidden group-hover:block absolute z-10 bottom-full mb-2 left-1/2 -translate-x-1/2 w-64 bg-gray-800 text-white text-xs p-2 rounded shadow-lg">
+                                        保障自身安全，維持秩序和穩定。
+                                    </div>
+                                </div>
+                                <div class="maslow-level w-[100%] bg-green-100 border border-green-300 rounded p-2 text-center text-sm shadow-sm relative group">
+                                    <span class="font-bold text-green-700 block">1. 生理需要</span>
+                                    <div class="hidden group-hover:block absolute z-10 bottom-full mb-2 left-1/2 -translate-x-1/2 w-64 bg-gray-800 text-white text-xs p-2 rounded shadow-lg">
+                                        人類第一類和最基本的需要。
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Maslow Table -->
+                            <div class="overflow-x-auto">
+                                <table class="custom-table w-full text-sm">
+                                    <thead>
+                                        <tr>
+                                            <th class="w-1/4">需要層次</th>
+                                            <th class="w-3/4">企業滿足方式（跟隨書中字眼）</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr class="bg-red-50">
+                                            <td class="font-bold text-red-800">自我實現需要</td>
+                                            <td><span class="recite-target">企業可透過給予具挑戰性又能達成的工作、提供培訓和發展機會、擢升能力較高的僱員來滿足。</span></td>
+                                        </tr>
+                                        <tr class="bg-orange-50">
+                                            <td class="font-bold text-orange-800">自我需要</td>
+                                            <td><span class="recite-target">企業可透過表揚僱員的努力、頒發獎項、尊重僱員意見、給予更多工作自主權來滿足。</span></td>
+                                        </tr>
+                                        <tr class="bg-yellow-50">
+                                            <td class="font-bold text-yellow-800">社交需要</td>
+                                            <td><span class="recite-target">企業可透過為僱員組織康樂活動和社交聚會，或展現關心和體貼僱員來滿足。</span></td>
+                                        </tr>
+                                        <tr class="bg-blue-50">
+                                            <td class="font-bold text-blue-800">安全需要</td>
+                                            <td><span class="recite-target">企業可透過提供安全的工作環境、保險和退休福利、長期的僱傭合約來滿足。</span></td>
+                                        </tr>
+                                        <tr class="bg-green-50">
+                                            <td class="font-bold text-green-800">生理需要</td>
+                                            <td><span class="recite-target">企業可透過提供優厚的薪金和其他金錢報酬，或提供充足的休息、用餐和如廁時間來滿足。</span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Herzberg -->
+                        <div class="mb-12">
+                            <h4 class="font-bold text-gray-800 mb-4 border-l-4 border-green-500 pl-3">2. 赫茨伯格的兩因子理論 (5.3B)</h4>
+                            <p class="text-sm text-gray-600 mb-4">赫茨伯格提出「激勵保健理論」，認為個人的工作態度決定其工作表現。</p>
+                            
+                            <div class="grid md:grid-cols-2 gap-6">
+                                <!-- Hygiene Factors -->
+                                <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                                    <h5 class="font-bold text-gray-700 border-b border-gray-300 pb-2 mb-3">保健因子 (Hygiene Factors)</h5>
+                                    <p class="recite-target text-sm text-gray-600 mb-3">可防止僱員對工作感到不滿意的因素，但不能激勵僱員。</p>
+                                    <div class="text-xs bg-white p-2 rounded border border-gray-200">
+                                        <span class="font-bold">例子：</span><span class="recite-target">薪金、工作環境、與主管和同事的關係、地位、職業保障、公司政策和行政。</span>
+                                    </div>
+                                </div>
+
+                                <!-- Motivators -->
+                                <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                                    <h5 class="font-bold text-green-800 border-b border-green-300 pb-2 mb-3">激勵因子 (Motivators)</h5>
+                                    <p class="recite-target text-sm text-gray-600 mb-3">令僱員對工作感到滿意的因素，有助激勵僱員提升工作效率。</p>
+                                    <div class="text-xs bg-white p-2 rounded border border-green-100">
+                                        <span class="font-bold">例子：</span><span class="recite-target">成就感、認同、工作本身的性質、責任、晉升、個人成長、自主權。</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- McGregor -->
+                        <div>
+                            <h4 class="font-bold text-gray-800 mb-4 border-l-4 border-green-500 pl-3">3. 麥格雷戈的 X 理論及 Y 理論 (5.3C)</h4>
+                            <div class="overflow-x-auto">
+                                <table class="custom-table w-full text-sm">
+                                    <thead>
+                                        <tr>
+                                            <th class="w-1/6">理論類型</th>
+                                            <th class="w-5/12">管理人員的假設（跟隨書中字眼）</th>
+                                            <th class="w-5/12">激勵方法</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="font-bold text-red-800 bg-red-50 text-center align-middle">X 理論</td>
+                                            <td class="bg-white">
+                                                <ul class="list-decimal list-inside text-gray-600 space-y-1">
+                                                    <li class="recite-target">僱員本質上都是不喜歡工作的，總是盡量避免工作。</li>
+                                                    <li class="recite-target">僱員傾向逃避責任，尋求正式指引。</li>
+                                                    <li class="recite-target">僱員都沒有抱負，主要關注金錢和保障。</li>
+                                                </ul>
+                                            </td>
+                                            <td class="bg-white"><span class="recite-target">提供優厚的金錢報酬；採取密切監控、高壓手段或懲罰方式。</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="font-bold text-blue-800 bg-blue-50 text-center align-middle">Y 理論</td>
+                                            <td class="bg-white">
+                                                <ul class="list-decimal list-inside text-gray-600 space-y-1">
+                                                    <li class="recite-target">僱員視工作為生命的一部分，會自我激勵和控制。</li>
+                                                    <li class="recite-target">大多數僱員都能學習接受責任，甚或主動承擔更多責任。</li>
+                                                    <li class="recite-target">大多數僱員都有能力作出決策。</li>
+                                                </ul>
+                                            </td>
+                                            <td class="bg-white"><span class="recite-target">滿足較高層次的需要；邀請參與決策；給予具挑戰性的工作；提供培訓和發展機會。</span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 3. 內部溝通 -->
+                <section class="mb-10">
+                    <h2 class="text-xl font-bold text-green-800 mb-4 flex items-center">
+                        <span class="w-8 h-8 bg-green-100 text-green-600 rounded-lg flex items-center justify-center mr-3 text-sm">三</span>
+                        內部溝通 <span class="important-tag"><i data-lucide="star" class="w-3 h-3 mr-1"></i>重點</span>
+                    </h2>
+                    
+                    <div class="section-card">
+                        <p class="recite-target text-gray-700 mb-6 note-text">良好的內部溝通能促進管理層與員工之間的了解，避免勞資糾紛。</p>
+
+                        <div class="grid gap-4 md:grid-cols-2">
+                            <!-- Card 1 -->
+                            <div class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
+                                <h4 class="font-bold text-gray-800 mb-2 flex items-center"><i data-lucide="compass" class="w-4 h-4 mr-2 text-green-600"></i>職前輔導計劃 / 入職引導計劃</h4>
+                                <p class="recite-target text-sm text-gray-600 mb-2">向新員工介紹企業（如文化、願景、價值觀）及工作內容。</p>
+                                <p class="text-xs text-green-700 bg-green-50 p-1.5 rounded"><span class="font-bold">目的：</span><span class="recite-target">幫助新員工適應新工作環境，提升效率。</span></p>
+                            </div>
+
+                            <!-- Card 2 -->
+                            <div class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
+                                <h4 class="font-bold text-gray-800 mb-2 flex items-center"><i data-lucide="user-check" class="w-4 h-4 mr-2 text-green-600"></i>指導計劃 / 導師計劃</h4>
+                                <p class="recite-target text-sm text-gray-600 mb-2">安排有經驗人士（導師）協助支援新員工發展技能。</p>
+                                <p class="text-xs text-green-700 bg-green-50 p-1.5 rounded"><span class="font-bold">目的：</span><span class="recite-target">滿足社交需要，增加歸屬感。</span></p>
+                            </div>
+
+                            <!-- Card 3 -->
+                            <div class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
+                                <h4 class="font-bold text-gray-800 mb-2 flex items-center"><i data-lucide="coffee" class="w-4 h-4 mr-2 text-green-600"></i>社交聚會</h4>
+                                <p class="recite-target text-sm text-gray-600 mb-2">組織聚會（如野餐、公司旅行）以促進同事間友誼。</p>
+                                <p class="text-xs text-green-700 bg-green-50 p-1.5 rounded"><span class="font-bold">目的：</span><span class="recite-target">發展社交網絡，增加歸屬感。</span></p>
+                            </div>
+
+                            <!-- Card 4 -->
+                            <div class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
+                                <h4 class="font-bold text-gray-800 mb-2 flex items-center"><i data-lucide="users" class="w-4 h-4 mr-2 text-green-600"></i>定期員工會議</h4>
+                                <p class="recite-target text-sm text-gray-600 mb-2">定期召開會議直接傳達政策、目標和策略。</p>
+                                <p class="text-xs text-green-700 bg-green-50 p-1.5 rounded"><span class="font-bold">目的：</span><span class="recite-target">建立員工對領導層的信任，確保目標一致。</span></p>
+                            </div>
+
+                            <!-- Card 5 -->
+                            <div class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition md:col-span-2">
+                                <h4 class="font-bold text-gray-800 mb-2 flex items-center"><i data-lucide="message-circle" class="w-4 h-4 mr-2 text-green-600"></i>員工意見調查</h4>
+                                <p class="recite-target text-sm text-gray-600 mb-2">了解員工對企業及工作的想法。</p>
+                                <p class="text-xs text-green-700 bg-green-50 p-1.5 rounded"><span class="font-bold">目的：</span><span class="recite-target">讓員工表達意見和投訴，以助企業作出更好決策，避免勞資糾紛。</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Analogy Section -->
+                <section class="mb-10">
+                    <div class="bg-gradient-to-r from-green-50 to-teal-50 border border-green-100 rounded-lg p-5 shadow-sm">
+                        <h2 class="text-lg font-bold text-green-900 mb-4 flex items-center">
+                            <span class="text-xl mr-2">💡</span> 類比理解： 「發展優質人力資源」「栽培一棵果樹」
+                        </h2>
+                        <ul class="space-y-3 text-sm text-green-800">
+                            <li class="flex items-start">
+                                <span class="font-bold mr-2 text-green-600 flex-shrink-0">• 馬斯洛理論：</span>
+                                <span class="recite-target">是了解果樹的生長需求，先要有水和陽光（生理/安全），再到修剪與支撐（社交/自我實現）。</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="font-bold mr-2 text-green-600 flex-shrink-0">• 赫茨伯格理論：</span>
+                                <span class="recite-target">保健因子是除蟲與施肥，沒做果樹會死（不滿意），但做了不代表一定結出甜果；激勵因子則是優良的品種與充足的陽光，這才是結出好果實（滿意/激勵）的關鍵。</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="font-bold mr-2 text-green-600 flex-shrink-0">• 內部溝通：</span>
+                                <span class="recite-target">就像是<span class="font-bold">「自動灌溉系統的傳感器」</span>，確保果農（管理層）能即時知道土壤（員工）的狀況，避免枯萎或病蟲害（勞資糾紛）。</span>
+                            </li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Navigation Buttons -->
+                <div class="flex justify-between mt-8 mb-12">
+                    <a href="page7.html" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium flex items-center transition">
+                        <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i> 上一課題：培訓和發展
+                    </a>
+                    <a href="page9.html" class="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium flex items-center shadow-lg transition transform hover:-translate-y-0.5">
+                        下一單元：市場營銷的角色 <i data-lucide="arrow-right" class="w-4 h-4 ml-2"></i>
+                    </a>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        // Mobile Sidebar Toggle Logic
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+
+        mobileMenuBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('hidden');
+            sidebar.classList.toggle('-translate-x-full');
+            if (!sidebar.classList.contains('hidden')) {
+                overlay.classList.remove('hidden');
+            } else {
+                overlay.classList.add('hidden');
+            }
+        });
+
+        overlay.addEventListener('click', () => {
+            sidebar.classList.add('hidden');
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('hidden');
+        });
+
+        // Sidebar Accordion Logic
+        function toggleMenu(menuId, btn) {
+            const menu = document.getElementById(menuId);
+            const isExpanded = btn.getAttribute('aria-expanded') === 'true';
+            
+            // Toggle current menu
+            if (isExpanded) {
+                menu.classList.add('hidden');
+                btn.setAttribute('aria-expanded', 'false');
+            } else {
+                menu.classList.remove('hidden');
+                btn.setAttribute('aria-expanded', 'true');
+            }
+        }
+
+        // Recite Mode Logic
+        const reciteToggle = document.getElementById('recite-toggle');
+        const contentArea = document.getElementById('content-area');
+        
+        reciteToggle.addEventListener('change', function() {
+            const targets = document.querySelectorAll('.recite-target');
+            
+            if (this.checked) {
+                targets.forEach(el => {
+                    el.classList.add('recite-blur');
+                    el.classList.remove('recite-revealed');
+                });
+            } else {
+                targets.forEach(el => {
+                    el.classList.remove('recite-blur');
+                    el.classList.remove('recite-revealed');
+                });
+            }
+        });
+
+        // Click to reveal logic
+        contentArea.addEventListener('click', function(e) {
+            let target = e.target;
+            // Handle if clicking on child element within blur target
+            if (target.closest('.recite-blur')) {
+                target.closest('.recite-blur').classList.toggle('recite-revealed');
+            }
+        });
+    </script>
+</body>
+</html>

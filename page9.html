@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1. 市場營銷的角色 - BAFS 2026</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .important-tag {
+            background-color: #fee2e2;
+            color: #b91c1c;
+            padding: 0.1rem 0.4rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            margin-left: 0.5rem;
+            vertical-align: middle;
+            border: 1px solid #fecaca;
+        }
+        .section-card {
+            background: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid #e5e7eb;
+        }
+        /* Sidebar Scrollbar */
+        .sidebar-scroll::-webkit-scrollbar { width: 6px; }
+        .sidebar-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
+        .sidebar-scroll::-webkit-scrollbar-thumb { background: #c7c7c7; border-radius: 3px; }
+        .sidebar-scroll::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+
+        /* Recite Mode Styles */
+        .recite-blur {
+            color: transparent !important;
+            text-shadow: 0 0 10px rgba(0,0,0,0.5);
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.3s ease;
+            position: relative;
+            background-color: rgba(0,0,0,0.03);
+            border-radius: 4px;
+        }
+        .recite-blur:hover {
+            text-shadow: 0 0 6px rgba(0,0,0,0.7);
+            background-color: rgba(0,0,0,0.06);
+        }
+        .recite-blur::after {
+            content: '點擊顯示';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 0.75rem;
+            color: #6b7280;
+            opacity: 0.7;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+        .recite-revealed {
+            color: inherit !important;
+            text-shadow: none !important;
+            background-color: transparent !important;
+        }
+        .recite-revealed::after {
+            display: none;
+        }
+        
+        /* Toggle Switch */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #2563eb;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #2563eb;
+        }
+        
+        /* Typography for notes */
+        .note-text {
+            line-height: 1.6;
+        }
+
+        /* Table Styles */
+        .custom-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .custom-table th, .custom-table td {
+            border: 1px solid #e5e7eb;
+            padding: 0.75rem;
+            text-align: left;
+            vertical-align: top;
+        }
+        .custom-table th {
+            background-color: #f9fafb;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        /* Accordion Chevron Rotation */
+        .chevron-icon {
+            transition: transform 0.3s ease;
+        }
+        .group[aria-expanded="true"] .chevron-icon {
+            transform: rotate(180deg);
+        }
+
+        /* Process Steps */
+        .process-step {
+            position: relative;
+            padding-left: 2.5rem;
+            padding-bottom: 1.5rem;
+        }
+        .process-step:last-child {
+            padding-bottom: 0;
+        }
+        .process-step::before {
+            content: '';
+            position: absolute;
+            left: 0.9rem;
+            top: 2rem;
+            bottom: 0;
+            width: 2px;
+            background-color: #e5e7eb;
+        }
+        .process-step:last-child::before {
+            display: none;
+        }
+        .process-icon {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            background-color: #f3e8ff; /* Purple tint */
+            color: #7e22ce;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            z-index: 10;
+            border: 2px solid white;
+            box-shadow: 0 0 0 2px #f3e8ff;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col text-gray-800">
+
+    <!-- Navbar -->
+    <nav class="bg-white shadow-md sticky top-0 z-50 h-16 flex-none">
+        <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8 h-full">
+            <div class="flex justify-between items-center h-full">
+                <div class="flex items-center">
+                    <button id="mobile-menu-btn" class="lg:hidden p-2 rounded-md text-gray-600 hover:text-blue-600 hover:bg-gray-100 focus:outline-none mr-2">
+                        <i data-lucide="menu" class="h-6 w-6"></i>
+                    </button>
+                    <a href="index.html" class="flex items-center hover:opacity-80 transition">
+                        <i data-lucide="book-open" class="h-8 w-8 text-blue-600 mr-2"></i>
+                        <span class="font-bold text-xl tracking-tight text-gray-900 hidden sm:block">HKDSE BAFS 2026</span>
+                        <span class="font-bold text-xl tracking-tight text-gray-900 sm:hidden">BAFS</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <!-- Recite Mode Toggle -->
+                    <div class="flex items-center mr-2">
+                        <span class="text-sm font-medium text-gray-700 mr-2 hidden sm:block">背書模式</span>
+                        <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                            <input type="checkbox" name="toggle" id="recite-toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer border-gray-300 transition-all duration-300 ease-in-out left-0 top-0"/>
+                            <label for="recite-toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer transition-colors duration-300"></label>
+                        </div>
+                    </div>
+
+                    <a href="index.html" class="text-gray-500 hover:text-blue-600 font-medium text-sm flex items-center bg-gray-100 px-3 py-1.5 rounded-full transition">
+                        <i data-lucide="home" class="w-4 h-4 mr-1"></i> 返回目錄
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="flex flex-grow overflow-hidden relative">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="bg-white w-64 border-r border-gray-200 flex-none hidden lg:block lg:relative absolute z-40 h-full overflow-y-auto sidebar-scroll transition-all duration-300 transform -translate-x-full lg:translate-x-0 top-0 left-0">
+            <div class="p-4">
+                <h2 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">課程導航</h2>
+                
+                <!-- B1 -->
+                <div class="mb-4">
+                    <button class="w-full flex justify-between items-center text-left font-bold text-blue-700 mb-2 group hover:text-blue-800 transition focus:outline-none" onclick="toggleMenu('menu-b1', this)" aria-expanded="false">
+                        <span class="flex items-center"><i data-lucide="briefcase" class="w-4 h-4 mr-2"></i>B1 管理導論</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4 chevron-icon"></i>
+                    </button>
+                    <ul id="menu-b1" class="space-y-1 text-sm ml-2 border-l-2 border-gray-100 pl-2 hidden">
+                        <li><a href="page1.html" class="block py-1.5 px-2 rounded hover:bg-blue-50 text-gray-600 hover:text-blue-600">1. 管理功能</a></li>
+                        <li><a href="page2.html" class="block py-1.5 px-2 rounded hover:bg-blue-50 text-gray-600 hover:text-blue-600">2. 主要商業功能</a></li>
+                        <li><a href="page3.html" class="block py-1.5 px-2 rounded hover:bg-blue-50 text-gray-600 hover:text-blue-600">3. 中小型企業</a></li>
+                    </ul>
+                </div>
+
+                <!-- B2/B3 -->
+                <div class="mb-4">
+                    <button class="w-full flex justify-between items-center text-left font-bold text-green-700 mb-2 group hover:text-green-800 transition focus:outline-none" onclick="toggleMenu('menu-b2', this)" aria-expanded="false">
+                        <span class="flex items-center"><i data-lucide="users" class="w-4 h-4 mr-2"></i>B2/B3 人力資源</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4 chevron-icon"></i>
+                    </button>
+                    <ul id="menu-b2" class="space-y-1 text-sm ml-2 border-l-2 border-gray-100 pl-2 hidden">
+                        <li><a href="page4.html" class="block py-1.5 px-2 rounded hover:bg-green-50 text-gray-600 hover:text-green-600">1. 人力規劃和員工編制</a></li>
+                        <li><a href="page5.html" class="block py-1.5 px-2 rounded hover:bg-green-50 text-gray-600 hover:text-green-600">2. 員工考績</a></li>
+                        <li><a href="page6.html" class="block py-1.5 px-2 rounded hover:bg-green-50 text-gray-600 hover:text-green-600">3. 報酬管理</a></li>
+                        <li><a href="page7.html" class="block py-1.5 px-2 rounded hover:bg-green-50 text-gray-600 hover:text-green-600">4. 培訓和發展</a></li>
+                        <li><a href="page8.html" class="block py-1.5 px-2 rounded hover:bg-green-50 text-gray-600 hover:text-green-600">5. 發展優質人力資源</a></li>
+                    </ul>
+                </div>
+
+                <!-- B4-B6 (Expanded) -->
+                <div class="mb-4">
+                    <button class="w-full flex justify-between items-center text-left font-bold text-purple-700 mb-2 group hover:text-purple-800 transition focus:outline-none" onclick="toggleMenu('menu-b4', this)" aria-expanded="true">
+                        <span class="flex items-center"><i data-lucide="shopping-bag" class="w-4 h-4 mr-2"></i>B4-B6 市場營銷</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4 chevron-icon"></i>
+                    </button>
+                    <ul id="menu-b4" class="space-y-1 text-sm ml-2 border-l-2 border-gray-100 pl-2">
+                        <li><a href="page9.html" class="block py-1.5 px-2 rounded bg-purple-50 text-purple-600 font-medium">1. 市場營銷的角色</a></li>
+                        <li><a href="page10.html" class="block py-1.5 px-2 rounded hover:bg-purple-50 text-gray-600 hover:text-purple-600">2. 市場研究</a></li>
+                        <li><a href="page11.html" class="block py-1.5 px-2 rounded hover:bg-purple-50 text-gray-600 hover:text-purple-600">3. 消費者行為</a></li>
+                        <li><a href="page12.html" class="block py-1.5 px-2 rounded hover:bg-purple-50 text-gray-600 hover:text-purple-600">4. 市場區隔與定位</a></li>
+                        <li><a href="page13.html" class="block py-1.5 px-2 rounded hover:bg-purple-50 text-gray-600 hover:text-purple-600">5. 市場營銷策略 (一)</a></li>
+                        <li><a href="page14.html" class="block py-1.5 px-2 rounded hover:bg-purple-50 text-gray-600 hover:text-purple-600">6. 市場營銷策略 (二)</a></li>
+                        <li><a href="page15.html" class="block py-1.5 px-2 rounded hover:bg-purple-50 text-gray-600 hover:text-purple-600">7. 顧客關係管理</a></li>
+                    </ul>
+                </div>
+
+                <!-- B7-B9 -->
+                <div class="mb-4">
+                    <button class="w-full flex justify-between items-center text-left font-bold text-red-700 mb-2 group hover:text-red-800 transition focus:outline-none" onclick="toggleMenu('menu-b7', this)" aria-expanded="false">
+                        <span class="flex items-center"><i data-lucide="bar-chart-3" class="w-4 h-4 mr-2"></i>B7-B9 財務管理</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4 chevron-icon"></i>
+                    </button>
+                    <ul id="menu-b7" class="space-y-1 text-sm ml-2 border-l-2 border-gray-100 pl-2 hidden">
+                        <li><a href="page16.html" class="block py-1.5 px-2 rounded hover:bg-red-50 text-gray-600 hover:text-red-600">1. 財務分析</a></li>
+                        <li><a href="page17.html" class="block py-1.5 px-2 rounded hover:bg-red-50 text-gray-600 hover:text-red-600">2. 預算編製</a></li>
+                        <li><a href="page18.html" class="block py-1.5 px-2 rounded hover:bg-red-50 text-gray-600 hover:text-red-600">3. 融資方式</a></li>
+                        <li><a href="page19.html" class="block py-1.5 px-2 rounded hover:bg-red-50 text-gray-600 hover:text-red-600">4. 資本投資評估</a></li>
+                        <li><a href="page20.html" class="block py-1.5 px-2 rounded hover:bg-red-50 text-gray-600 hover:text-red-600">5. 營運資金管理</a></li>
+                        <li><a href="page21.html" class="block py-1.5 px-2 rounded hover:bg-red-50 text-gray-600 hover:text-red-600">6. 風險管理</a></li>
+                    </ul>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Overlay for mobile sidebar -->
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black opacity-50 z-30 hidden lg:hidden"></div>
+
+        <!-- Main Content -->
+        <main class="flex-grow overflow-y-auto h-full p-4 sm:p-8 bg-gray-50" id="content-area">
+            <div class="max-w-4xl mx-auto">
+                <!-- Header -->
+                <div class="mb-8 border-b pb-4">
+                    <div class="flex items-center text-sm text-gray-500 mb-2">
+                        <span>B4-B6 市場營銷管理</span>
+                        <i data-lucide="chevron-right" class="w-4 h-4 mx-2"></i>
+                        <span class="text-purple-600 font-medium">1. 市場營銷的角色</span>
+                    </div>
+                    <h1 class="text-3xl font-extrabold text-gray-900">市場營銷的角色</h1>
+                    <p class="text-gray-600 mt-2 recite-target">解釋市場營銷概念及過程（計劃、組織、實行和監控）。</p>
+                </div>
+
+                <!-- Intro Alert -->
+                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-8">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i data-lucide="trending-up" class="h-5 w-5 text-yellow-500"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-yellow-700">
+                                <span class="font-bold">Trend_DSE 筆記：</span>
+                                根據趨勢分析，此概念及其應用在 2012 年及 2018 年均有命題；市場營銷計劃部分在 2017 年及 2018 年頻繁出題。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 1. 市場營銷概念 -->
+                <section class="mb-10">
+                    <h2 class="text-xl font-bold text-purple-800 mb-4 flex items-center">
+                        <span class="w-8 h-8 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center mr-3 text-sm">一</span>
+                        市場營銷概念 (Marketing Concept) <span class="important-tag"><i data-lucide="star" class="w-3 h-3 mr-1"></i>重點</span>
+                    </h2>
+                    
+                    <div class="section-card">
+                        <p class="text-gray-700 mb-4 italic recite-target">市場營銷概念在引導企業運作方面扮演舉足輕重的角色。</p>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="custom-table w-full">
+                                <thead>
+                                    <tr>
+                                        <th class="w-1/4">項目</th>
+                                        <th class="w-3/4">詳細內容（跟隨書中字眼）</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="bg-white">
+                                        <td class="font-medium text-purple-700">市場營銷概念</td>
+                                        <td><span class="recite-target">企業應分析顧客的需要，並採取合適的措施來滿足這些需要，藉此賺取利潤；以及比競爭對手更有效和更具效率地滿足顧客。</span></td>
+                                    </tr>
+                                    <tr class="bg-gray-50">
+                                        <td class="font-medium text-purple-700">運作原理</td>
+                                        <td><span class="recite-target">市場營銷有助企業向顧客提供他們真正需要的貨品和服務，而非要他們購買根本不需要的貨品和服務。</span></td>
+                                    </tr>
+                                    <tr class="bg-white">
+                                        <td class="font-medium text-purple-700">雙贏效果</td>
+                                        <td><span class="recite-target">市場營銷可以同時為企業和顧客帶來好處。企業可從中賺取利潤，而顧客則可滿足自身的需要。</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 2. 市場營銷作為商業功能的重要性 -->
+                <section class="mb-10">
+                    <h2 class="text-xl font-bold text-purple-800 mb-4 flex items-center">
+                        <span class="w-8 h-8 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center mr-3 text-sm">二</span>
+                        市場營銷作為商業功能的重要性 <span class="important-tag"><i data-lucide="star" class="w-3 h-3 mr-1"></i>重點</span>
+                    </h2>
+
+                    <div class="section-card">
+                        <p class="text-sm text-gray-500 mb-4 bg-yellow-50 p-2 rounded">市場營銷是一項極其重要的商業功能。此課題曾於 2017 年 DSE 考核。</p>
+
+                        <div class="space-y-4">
+                            <div class="flex items-start">
+                                <div class="flex-shrink-0 w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center font-bold mr-3">1</div>
+                                <div>
+                                    <h4 class="font-bold text-gray-800">找出和滿足顧客的需要</h4>
+                                    <p class="recite-target text-sm text-gray-600 mt-1 note-text">市場營銷幫助企業辨別誰是顧客，即選定目標市場。企業可透過進行市場研究找出目標顧客的需要，並制定策略來滿足這些需要。</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <div class="flex-shrink-0 w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center font-bold mr-3">2</div>
+                                <div>
+                                    <h4 class="font-bold text-gray-800">制定策略以應付競爭</h4>
+                                    <p class="recite-target text-sm text-gray-600 mt-1 note-text">企業要比競爭對手更能滿足顧客的需要，便須時刻留意競爭對手的舉動，從而制定合適的市場營銷策略來應付競爭。</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <div class="flex-shrink-0 w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center font-bold mr-3">3</div>
+                                <div>
+                                    <h4 class="font-bold text-gray-800">與顧客維持長遠關係</h4>
+                                    <p class="recite-target text-sm text-gray-600 mt-1 note-text">企業持續滿足顧客的需要，便可提升顧客忠誠度和留住顧客。</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <div class="flex-shrink-0 w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center font-bold mr-3">4</div>
+                                <div>
+                                    <h4 class="font-bold text-gray-800">監察和應對市場變化</h4>
+                                    <p class="recite-target text-sm text-gray-600 mt-1 note-text">市場營銷讓企業緊貼市場變化，從而作出相應的行動，這有助企業把握機會和應對危機。</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 3. 市場營銷過程 -->
+                <section class="mb-10">
+                    <h2 class="text-xl font-bold text-purple-800 mb-4 flex items-center">
+                        <span class="w-8 h-8 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center mr-3 text-sm">三</span>
+                        市場營銷過程 (Marketing Process)
+                    </h2>
+                    
+                    <div class="section-card">
+                        <p class="recite-target text-gray-700 mb-6 note-text">市場營銷過程由四項主要工作組成：計劃、組織、執行和控制市場營銷活動。</p>
+
+                        <!-- 1. Planning -->
+                        <div class="mb-8">
+                            <h4 class="font-bold text-gray-800 mb-4 border-l-4 border-purple-500 pl-3 flex items-center">
+                                1. 計劃市場營銷活動 (Planning) <span class="important-tag ml-2">重點</span>
+                            </h4>
+                            <p class="text-sm text-gray-600 mb-4">企業制定市場營銷計劃（提供詳盡而可行的指引）的步驟如下：</p>
+
+                            <div class="space-y-6">
+                                <!-- Step 1 -->
+                                <div class="process-step">
+                                    <div class="process-icon">1</div>
+                                    <h5 class="font-bold text-gray-800 mb-2">檢視現時表現和進行強弱機危分析 (SWOT Analysis)</h5>
+                                    <!-- SWOT Grid -->
+                                    <div class="grid grid-cols-2 gap-2 text-sm">
+                                        <div class="bg-green-50 p-2 rounded border border-green-100">
+                                            <span class="font-bold text-green-700 block">強項 (Strengths)</span>
+                                            <span class="recite-target text-gray-600 text-xs">讓企業取得競爭優勢的內在優點。</span>
+                                        </div>
+                                        <div class="bg-red-50 p-2 rounded border border-red-100">
+                                            <span class="font-bold text-red-700 block">弱項 (Weaknesses)</span>
+                                            <span class="recite-target text-gray-600 text-xs">令企業相對於競爭對手處於劣勢的內在限制。</span>
+                                        </div>
+                                        <div class="bg-blue-50 p-2 rounded border border-blue-100">
+                                            <span class="font-bold text-blue-700 block">機會 (Opportunities)</span>
+                                            <span class="recite-target text-gray-600 text-xs">讓企業有機會提升競爭優勢的外在因素。</span>
+                                        </div>
+                                        <div class="bg-yellow-50 p-2 rounded border border-yellow-100">
+                                            <span class="font-bold text-yellow-700 block">危機 (Threats)</span>
+                                            <span class="recite-target text-gray-600 text-xs">可能影響企業表現的外在不利因素。</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Step 2 & 3 -->
+                                <div class="process-step">
+                                    <div class="process-icon">2-3</div>
+                                    <div class="space-y-3">
+                                        <div>
+                                            <h5 class="font-bold text-gray-800">第 2 步：訂立市場營銷目標</h5>
+                                            <p class="recite-target text-sm text-gray-600">目標應符合良好目標 (SMART) 規則。</p>
+                                        </div>
+                                        <div>
+                                            <h5 class="font-bold text-gray-800">第 3 步：選擇目標市場</h5>
+                                            <p class="recite-target text-sm text-gray-600">了解不同市場組別的購買行為，選擇最合適的群組。</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Step 4 -->
+                                <div class="process-step">
+                                    <div class="process-icon">4</div>
+                                    <h5 class="font-bold text-gray-800 mb-2">制定市場營銷策略</h5>
+                                    <ul class="list-disc list-inside text-sm text-gray-600 space-y-1 mb-3">
+                                        <li><span class="font-bold">市場領導者策略：</span><span class="recite-target">擴展整體市場、增加或保持現有的市場佔有率。</span></li>
+                                        <li><span class="font-bold">市場挑戰者策略：</span><span class="recite-target">攻擊競爭對手弱項、提升產品質量或降低價格。</span></li>
+                                        <li><span class="font-bold">市場追隨者策略：</span><span class="recite-target">模仿主要品牌產品的名字、設計和包裝。</span></li>
+                                        <li><span class="font-bold">市場補缺者策略：</span><span class="recite-target">專門服務細小市場組別（縫隙市場）。</span></li>
+                                    </ul>
+                                    <div class="bg-purple-50 p-3 rounded border border-purple-100">
+                                        <span class="font-bold text-purple-800 block mb-1">設計市場營銷組合策略 (4P)：</span>
+                                        <div class="flex justify-between text-xs text-center text-purple-700 font-medium">
+                                            <span class="recite-target">產品 (Product)</span>
+                                            <span class="recite-target">價格 (Price)</span>
+                                            <span class="recite-target">分銷 (Place)</span>
+                                            <span class="recite-target">推廣 (Promotion)</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 2. Organizing -->
+                        <div class="mb-8">
+                            <h4 class="font-bold text-gray-800 mb-3 border-l-4 border-purple-500 pl-3">2. 組織市場營銷活動 (Organizing)</h4>
+                            <p class="text-sm text-gray-600 mb-2">企業通常採用以下四種組織結構：</p>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                                <div class="bg-gray-50 p-2 rounded"><span class="font-bold">功能組織：</span><span class="recite-target">按功能劃分（如市場研究部、銷售部）。</span></div>
+                                <div class="bg-gray-50 p-2 rounded"><span class="font-bold">產品組織：</span><span class="recite-target">按產品類別劃分（如服飾經理、鞋履經理）。</span></div>
+                                <div class="bg-gray-50 p-2 rounded"><span class="font-bold">區域組織：</span><span class="recite-target">按地區劃分（如美洲經理、亞洲經理）。</span></div>
+                                <div class="bg-gray-50 p-2 rounded"><span class="font-bold">顧客管理組織：</span><span class="recite-target">按顧客類別劃分（如個人帳戶經理、中小企帳戶經理）。</span></div>
+                            </div>
+                        </div>
+
+                        <!-- 3. Implementing -->
+                        <div class="mb-8">
+                            <h4 class="font-bold text-gray-800 mb-3 border-l-4 border-purple-500 pl-3">3. 執行市場營銷活動 (Implementing)</h4>
+                            <p class="recite-target text-sm text-gray-600 note-text">執行是指把市場營銷計劃付諸實行。影響執行的因素包括：市場營銷計劃是否完善、所需資源是否足夠、市場營銷經理是否具備領導才能。</p>
+                        </div>
+
+                        <!-- 4. Controlling -->
+                        <div>
+                            <h4 class="font-bold text-gray-800 mb-3 border-l-4 border-purple-500 pl-3">4. 控制市場營銷活動 (Controlling)</h4>
+                            <p class="recite-target text-sm text-gray-600 mb-2">控制是對活動進行監控，以確保活動按計劃完成的過程。</p>
+                            <div class="bg-purple-50 p-3 rounded text-sm text-purple-900 mb-2">
+                                <span class="font-bold">過程步驟：</span>
+                                <span class="recite-target">1. 訂立表現標準 → 2. 量度實際表現 → 3. 比較實際表現與標準 → 4. 分析差異並採取糾正行動。</span>
+                            </div>
+                            <p class="text-xs text-gray-500"><span class="font-bold">表現標準例子：</span><span class="recite-target">市場佔有率、銷售額增長率、新顧客數目和顧客投訴數目。</span></p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Analogy Section -->
+                <section class="mb-10">
+                    <div class="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-100 rounded-lg p-5 shadow-sm">
+                        <h2 class="text-lg font-bold text-purple-900 mb-4 flex items-center">
+                            <span class="text-xl mr-2">💡</span> 類比理解： 「市場營銷的角色」「球隊的領隊」
+                        </h2>
+                        <ul class="space-y-3 text-sm text-purple-800">
+                            <li class="flex items-start">
+                                <span class="font-bold mr-2 text-purple-600 flex-shrink-0">• 市場營銷概念（重點）：</span>
+                                <span class="recite-target">是領隊的哲學：必須比對手更能滿足球迷（顧客）的熱情，才能贏得門票收入（利潤）。</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="font-bold mr-2 text-purple-600 flex-shrink-0">• 強弱機危分析（重點）：</span>
+                                <span class="recite-target">是比賽前的敵我分析：了解球員傷患（弱項）與對手的防守漏洞（機會）。</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="font-bold mr-2 text-purple-600 flex-shrink-0">• 市場定位：</span>
+                                <span class="recite-target">是決定球隊的打法：是要像強隊一樣全場進攻（市場領導者），還是專注於反擊的小眾戰術（市場補缺者）。</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="font-bold mr-2 text-purple-600 flex-shrink-0">• 控制功能：</span>
+                                <span class="recite-target">是比賽中的即時調整：觀察比分（量度表現），若落後則換人（採取糾正行動）。</span>
+                            </li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Navigation Buttons -->
+                <div class="flex justify-between mt-8 mb-12">
+                    <a href="page7.html" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium flex items-center transition">
+                        <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i> 上一課題：培訓和發展
+                    </a>
+                    <a href="page10.html" class="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium flex items-center shadow-lg transition transform hover:-translate-y-0.5">
+                        下一課題：市場研究 <i data-lucide="arrow-right" class="w-4 h-4 ml-2"></i>
+                    </a>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        // Mobile Sidebar Toggle Logic
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+
+        mobileMenuBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('hidden');
+            sidebar.classList.toggle('-translate-x-full');
+            if (!sidebar.classList.contains('hidden')) {
+                overlay.classList.remove('hidden');
+            } else {
+                overlay.classList.add('hidden');
+            }
+        });
+
+        overlay.addEventListener('click', () => {
+            sidebar.classList.add('hidden');
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('hidden');
+        });
+
+        // Sidebar Accordion Logic
+        function toggleMenu(menuId, btn) {
+            const menu = document.getElementById(menuId);
+            const isExpanded = btn.getAttribute('aria-expanded') === 'true';
+            
+            // Toggle current menu
+            if (isExpanded) {
+                menu.classList.add('hidden');
+                btn.setAttribute('aria-expanded', 'false');
+            } else {
+                menu.classList.remove('hidden');
+                btn.setAttribute('aria-expanded', 'true');
+            }
+        }
+
+        // Recite Mode Logic
+        const reciteToggle = document.getElementById('recite-toggle');
+        const contentArea = document.getElementById('content-area');
+        
+        reciteToggle.addEventListener('change', function() {
+            const targets = document.querySelectorAll('.recite-target');
+            
+            if (this.checked) {
+                targets.forEach(el => {
+                    el.classList.add('recite-blur');
+                    el.classList.remove('recite-revealed');
+                });
+            } else {
+                targets.forEach(el => {
+                    el.classList.remove('recite-blur');
+                    el.classList.remove('recite-revealed');
+                });
+            }
+        });
+
+        // Click to reveal logic
+        contentArea.addEventListener('click', function(e) {
+            let target = e.target;
+            // Handle if clicking on child element within blur target
+            if (target.closest('.recite-blur')) {
+                target.closest('.recite-blur').classList.toggle('recite-revealed');
+            }
+        });
+    </script>
+</body>
+</html>
