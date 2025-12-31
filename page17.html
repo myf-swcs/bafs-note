@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2. 預算編製 - BAFS 2026</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- PDF Generation Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .important-tag {
+            background-color: #fee2e2;
+            color: #b91c1c;
+            padding: 0.1rem 0.4rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            margin-left: 0.5rem;
+            vertical-align: middle;
+            border: 1px solid #fecaca;
+        }
+        .section-card {
+            background: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid #e5e7eb;
+        }
+        
+        /* Sidebar Scrollbar */
+        .sidebar-scroll::-webkit-scrollbar { width: 6px; }
+        .sidebar-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
+        .sidebar-scroll::-webkit-scrollbar-thumb { background: #c7c7c7; border-radius: 3px; }
+        .sidebar-scroll::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+
+        /* Recite Mode Styles */
+        .recite-blur {
+            color: transparent !important;
+            text-shadow: 0 0 10px rgba(0,0,0,0.5);
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.3s ease;
+            position: relative;
+            background-color: rgba(0,0,0,0.03);
+            border-radius: 4px;
+        }
+        .recite-blur:hover {
+            text-shadow: 0 0 6px rgba(0,0,0,0.7);
+            background-color: rgba(0,0,0,0.06);
+        }
+        .recite-blur::after {
+            content: '點擊顯示';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 0.75rem;
+            color: #6b7280;
+            opacity: 0.7;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+        .recite-revealed {
+            color: inherit !important;
+            text-shadow: none !important;
+            background-color: transparent !important;
+        }
+        .recite-revealed::after {
+            display: none;
+        }
+        
+        /* Toggle Switch */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #2563eb;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #2563eb;
+        }
+        
+        /* Typography for notes */
+        .note-text {
+            line-height: 1.6;
+        }
+
+        /* Table Styles */
+        .custom-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .custom-table th, .custom-table td {
+            border: 1px solid #e5e7eb;
+            padding: 0.75rem;
+            text-align: left;
+            vertical-align: top;
+        }
+        .custom-table th {
+            background-color: #fef2f2; /* Red-50 */
+            font-weight: 600;
+            color: #991b1b; /* Red-800 */
+        }
+        
+        /* Accordion Chevron Rotation */
+        .chevron-icon {
+            transition: transform 0.3s ease;
+        }
+        .group[aria-expanded="true"] .chevron-icon {
+            transform: rotate(180deg);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col text-gray-800">
+
+    <!-- Navbar -->
+    <nav class="bg-white shadow-md sticky top-0 z-50 h-16 flex-none">
+        <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8 h-full">
+            <div class="flex justify-between items-center h-full">
+                <div class="flex items-center">
+                    <button id="mobile-menu-btn" class="lg:hidden p-2 rounded-md text-gray-600 hover:text-blue-600 hover:bg-gray-100 focus:outline-none mr-2">
+                        <i data-lucide="menu" class="h-6 w-6"></i>
+                    </button>
+                    <a href="index.html" class="flex items-center hover:opacity-80 transition">
+                        <i data-lucide="book-open" class="h-8 w-8 text-blue-600 mr-2"></i>
+                        <span class="font-bold text-xl tracking-tight text-gray-900 hidden sm:block">HKDSE BAFS 2026</span>
+                        <span class="font-bold text-xl tracking-tight text-gray-900 sm:hidden">BAFS</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <!-- PDF Download Button -->
+                    <button onclick="downloadPDF()" class="flex items-center text-gray-600 hover:text-red-600 font-medium text-sm bg-gray-100 hover:bg-red-50 px-3 py-1.5 rounded-full transition mr-2" title="下載筆記 PDF">
+                        <i data-lucide="file-down" class="w-4 h-4 mr-1"></i>
+                        <span class="hidden sm:inline">下載 PDF</span>
+                    </button>
+
+                    <!-- Recite Mode Toggle -->
+                    <div class="flex items-center mr-2">
+                        <span class="text-sm font-medium text-gray-700 mr-2 hidden sm:block">背書模式</span>
+                        <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                            <input type="checkbox" name="toggle" id="recite-toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer border-gray-300 transition-all duration-300 ease-in-out left-0 top-0"/>
+                            <label for="recite-toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer transition-colors duration-300"></label>
+                        </div>
+                    </div>
+
+                    <a href="index.html" class="text-gray-500 hover:text-blue-600 font-medium text-sm flex items-center bg-gray-100 px-3 py-1.5 rounded-full transition">
+                        <i data-lucide="home" class="w-4 h-4 mr-1"></i> 返回目錄
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="flex flex-grow overflow-hidden relative">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="bg-white w-64 border-r border-gray-200 flex-none hidden lg:block lg:relative absolute z-40 h-full overflow-y-auto sidebar-scroll transition-all duration-300 transform -translate-x-full lg:translate-x-0 top-0 left-0">
+            <div class="p-4">
+                <h2 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">課程導航</h2>
+                
+                <!-- B1 -->
+                <div class="mb-4">
+                    <button class="w-full flex justify-between items-center text-left font-bold text-blue-700 mb-2 group hover:text-blue-800 transition focus:outline-none" onclick="toggleMenu('menu-b1', this)" aria-expanded="false">
+                        <span class="flex items-center"><i data-lucide="briefcase" class="w-4 h-4 mr-2"></i>B1 管理導論</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4 chevron-icon"></i>
+                    </button>
+                    <ul id="menu-b1" class="space-y-1 text-sm ml-2 border-l-2 border-gray-100 pl-2 hidden">
+                        <li><a href="page1.html" class="block py-1.5 px-2 rounded hover:bg-blue-50 text-gray-600 hover:text-blue-600">1. 管理功能</a></li>
+                        <li><a href="page2.html" class="block py-1.5 px-2 rounded hover:bg-blue-50 text-gray-600 hover:text-blue-600">2. 主要商業功能</a></li>
+                        <li><a href="page3.html" class="block py-1.5 px-2 rounded hover:bg-blue-50 text-gray-600 hover:text-blue-600">3. 中小型企業</a></li>
+                    </ul>
+                </div>
+
+                <!-- B2/B3 -->
+                <div class="mb-4">
+                    <button class="w-full flex justify-between items-center text-left font-bold text-green-700 mb-2 group hover:text-green-800 transition focus:outline-none" onclick="toggleMenu('menu-b2', this)" aria-expanded="false">
+                        <span class="flex items-center"><i data-lucide="users" class="w-4 h-4 mr-2"></i>B2/B3 人力資源</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4 chevron-icon"></i>
+                    </button>
+                    <ul id="menu-b2" class="space-y-1 text-sm ml-2 border-l-2 border-gray-100 pl-2 hidden">
+                        <li><a href="page4.html" class="block py-1.5 px-2 rounded hover:bg-green-50 text-gray-600 hover:text-green-600">1. 人力規劃和員工編制</a></li>
+                        <li><a href="page5.html" class="block py-1.5 px-2 rounded hover:bg-green-50 text-gray-600 hover:text-green-600">2. 員工考績</a></li>
+                        <li><a href="page6.html" class="block py-1.5 px-2 rounded hover:bg-green-50 text-gray-600 hover:text-green-600">3. 報酬管理</a></li>
+                        <li><a href="page7.html" class="block py-1.5 px-2 rounded hover:bg-green-50 text-gray-600 hover:text-green-600">4. 培訓和發展</a></li>
+                        <li><a href="page8.html" class="block py-1.5 px-2 rounded hover:bg-green-50 text-gray-600 hover:text-green-600">5. 發展優質人力資源</a></li>
+                    </ul>
+                </div>
+
+                <!-- B4-B6 -->
+                <div class="mb-4">
+                    <button class="w-full flex justify-between items-center text-left font-bold text-purple-700 mb-2 group hover:text-purple-800 transition focus:outline-none" onclick="toggleMenu('menu-b4', this)" aria-expanded="false">
+                        <span class="flex items-center"><i data-lucide="shopping-bag" class="w-4 h-4 mr-2"></i>B4-B6 市場營銷</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4 chevron-icon"></i>
+                    </button>
+                    <ul id="menu-b4" class="space-y-1 text-sm ml-2 border-l-2 border-gray-100 pl-2 hidden">
+                        <li><a href="page9.html" class="block py-1.5 px-2 rounded hover:bg-purple-50 text-gray-600 hover:text-purple-600">1. 市場營銷的角色</a></li>
+                        <li><a href="page10.html" class="block py-1.5 px-2 rounded hover:bg-purple-50 text-gray-600 hover:text-purple-600">2. 市場研究</a></li>
+                        <li><a href="page11.html" class="block py-1.5 px-2 rounded hover:bg-purple-50 text-gray-600 hover:text-purple-600">3. 消費者行為</a></li>
+                        <li><a href="page12.html" class="block py-1.5 px-2 rounded hover:bg-purple-50 text-gray-600 hover:text-purple-600">4. 市場區隔與定位</a></li>
+                        <li><a href="page13.html" class="block py-1.5 px-2 rounded hover:bg-purple-50 text-gray-600 hover:text-purple-600">5. 市場營銷策略 (一)</a></li>
+                        <li><a href="page14.html" class="block py-1.5 px-2 rounded hover:bg-purple-50 text-gray-600 hover:text-purple-600">6. 市場營銷策略 (二)</a></li>
+                        <li><a href="page15.html" class="block py-1.5 px-2 rounded hover:bg-purple-50 text-gray-600 hover:text-purple-600">7. 顧客關係管理</a></li>
+                    </ul>
+                </div>
+
+                <!-- B7-B9 (Expanded by default) -->
+                <div class="mb-4">
+                    <button class="w-full flex justify-between items-center text-left font-bold text-red-700 mb-2 group hover:text-red-800 transition focus:outline-none" onclick="toggleMenu('menu-b7', this)" aria-expanded="true">
+                        <span class="flex items-center"><i data-lucide="bar-chart-3" class="w-4 h-4 mr-2"></i>B7-B9 財務管理</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4 chevron-icon"></i>
+                    </button>
+                    <ul id="menu-b7" class="space-y-1 text-sm ml-2 border-l-2 border-gray-100 pl-2">
+                        <li><a href="page16.html" class="block py-1.5 px-2 rounded hover:bg-red-50 text-red-600 hover:text-red-600">1. 財務分析</a></li>
+                        <li><a href="page17.html" class="block py-1.5 px-2 rounded bg-red-50 text-red-600 font-medium">2. 預算編製</a></li>
+                        <li><a href="page18.html" class="block py-1.5 px-2 rounded hover:bg-red-50 text-gray-600 hover:text-red-600">3. 融資方式</a></li>
+                        <li><a href="page19.html" class="block py-1.5 px-2 rounded hover:bg-red-50 text-gray-600 hover:text-red-600">4. 資本投資評估</a></li>
+                        <li><a href="page20.html" class="block py-1.5 px-2 rounded hover:bg-red-50 text-gray-600 hover:text-red-600">5. 營運資金管理</a></li>
+                        <li><a href="page21.html" class="block py-1.5 px-2 rounded hover:bg-red-50 text-gray-600 hover:text-red-600">6. 風險管理</a></li>
+                    </ul>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Overlay for mobile sidebar -->
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black opacity-50 z-30 hidden lg:hidden"></div>
+
+        <!-- Main Content -->
+        <main class="flex-grow overflow-y-auto h-full p-4 sm:p-8 bg-gray-50" id="content-area">
+            <div class="max-w-4xl mx-auto">
+                <!-- Header -->
+                <div class="mb-8 border-b pb-4">
+                    <div class="flex items-center text-sm text-gray-500 mb-2">
+                        <span>B7-B9 財務管理</span>
+                        <i data-lucide="chevron-right" class="w-4 h-4 mx-2"></i>
+                        <span class="text-red-600 font-medium">2. 預算編製</span>
+                    </div>
+                    <h1 class="text-3xl font-extrabold text-gray-900">預算編製</h1>
+                    <p class="text-gray-600 mt-2 recite-target">描述預算控制的用途、限制，以及預算差異的分析與補救措施。</p>
+                </div>
+
+                <!-- Intro Alert -->
+                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-8">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i data-lucide="trending-up" class="h-5 w-5 text-yellow-500"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-yellow-700">
+                                <span class="font-bold">Trend_DSE 筆記：</span>
+                                根據趨勢分析，編製預算的目的是基礎考點；預算控制的用途與限制為核心重點；預算差異成因頻繁出現於個案分析題中。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 1. 預算的定義 -->
+                <section class="mb-10">
+                    <h2 class="text-xl font-bold text-red-800 mb-4 flex items-center">
+                        <span class="w-8 h-8 bg-red-100 text-red-600 rounded-lg flex items-center justify-center mr-3 text-sm">一</span>
+                        預算的定義 (2.2)
+                    </h2>
+                    
+                    <div class="section-card">
+                        <div class="space-y-3 text-gray-700 note-text bg-gray-50 p-4 rounded border border-gray-100">
+                            <p><span class="font-bold text-red-800">• 定義：</span><span class="recite-target">預算是對未來收入和支出的預測。</span></p>
+                            <p><span class="font-bold text-red-800">• 特性：</span><span class="recite-target">我們可以將預算視為以數字形式表達的計劃。</span></p>
+                            <p><span class="font-bold text-red-800">• 總預算：</span><span class="recite-target">當企業匯集和歸納各項預算後，便得出總預算。</span></p>
+                            <p><span class="font-bold text-red-800">• 預算期：</span><span class="recite-target">一般是一年，但年度預算很多時會再細分為季度預算或月度預算。</span></p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 2. 編製預算的目的 -->
+                <section class="mb-10">
+                    <h2 class="text-xl font-bold text-red-800 mb-4 flex items-center">
+                        <span class="w-8 h-8 bg-red-100 text-red-600 rounded-lg flex items-center justify-center mr-3 text-sm">二</span>
+                        編製預算的目的 (2.3)
+                    </h2>
+
+                    <div class="section-card">
+                        <div class="grid gap-4 md:grid-cols-3">
+                            <div class="bg-white border border-red-200 p-4 rounded-lg shadow-sm hover:shadow-md transition">
+                                <h4 class="font-bold text-red-700 mb-2 flex items-center"><i data-lucide="map" class="w-4 h-4 mr-2"></i>1. 計劃</h4>
+                                <ul class="list-disc list-inside text-sm text-gray-600 space-y-1">
+                                    <li class="recite-target">規劃財務資源，以達成目標。</li>
+                                    <li class="recite-target">預測利潤或虧損，以及可能遇到的財務問題，以便及早採取防範措施。</li>
+                                    <li class="recite-target">提供清晰的指引或方向，讓不同部門能按照計劃達成企業的目標。</li>
+                                </ul>
+                            </div>
+                            <div class="bg-white border border-red-200 p-4 rounded-lg shadow-sm hover:shadow-md transition">
+                                <h4 class="font-bold text-red-700 mb-2 flex items-center"><i data-lucide="users" class="w-4 h-4 mr-2"></i>2. 協調</h4>
+                                <p class="recite-target text-sm text-gray-600">在編製預算的過程中，各部門的管理人員須要緊密溝通，有助不同部門互相協調，以達成企業的目標。</p>
+                            </div>
+                            <div class="bg-white border border-red-200 p-4 rounded-lg shadow-sm hover:shadow-md transition">
+                                <h4 class="font-bold text-red-700 mb-2 flex items-center"><i data-lucide="bar-chart-2" class="w-4 h-4 mr-2"></i>3. 控制</h4>
+                                <p class="recite-target text-sm text-gray-600">預算可以用作表現標準。高級管理層只要比較實際業績和預算，便可以監控和評估各部門的表現。</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 3. 預算控制 -->
+                <section class="mb-10">
+                    <h2 class="text-xl font-bold text-red-800 mb-4 flex items-center">
+                        <span class="w-8 h-8 bg-red-100 text-red-600 rounded-lg flex items-center justify-center mr-3 text-sm">三</span>
+                        預算控制 (2.4)
+                    </h2>
+                    
+                    <div class="section-card">
+                        <p class="mb-6 text-gray-700 recite-target note-text">預算控制是指企業制定預算，然後持續地比較實際業績和預算，以確保計劃能付諸實行。</p>
+
+                        <!-- Principles -->
+                        <div class="mb-8">
+                            <h4 class="font-bold text-gray-800 mb-3 border-l-4 border-red-500 pl-3">1. 編製預算的原則 (2.4A)</h4>
+                            <ul class="space-y-2 text-sm text-gray-700">
+                                <li class="flex items-start"><i data-lucide="check" class="w-4 h-4 text-green-500 mt-0.5 mr-2 flex-shrink-0"></i><span class="recite-target">分析必須具前瞻性，不要只依賴過往的數據。</span></li>
+                                <li class="flex items-start"><i data-lucide="check" class="w-4 h-4 text-green-500 mt-0.5 mr-2 flex-shrink-0"></i><span class="recite-target">編製預算的過程必須有條不紊，並且應讓企業內所有部門參與。</span></li>
+                                <li class="flex items-start"><i data-lucide="check" class="w-4 h-4 text-green-500 mt-0.5 mr-2 flex-shrink-0"></i><span class="recite-target">預算中訂立的目標，必須是可以達成的，而且要清楚表達出來。</span></li>
+                                <li class="flex items-start"><i data-lucide="check" class="w-4 h-4 text-green-500 mt-0.5 mr-2 flex-shrink-0"></i><span class="recite-target">必須明確界定管理人員在預算中的責任範圍。</span></li>
+                                <li class="flex items-start"><i data-lucide="check" class="w-4 h-4 text-green-500 mt-0.5 mr-2 flex-shrink-0"></i><span class="recite-target">必須比較預算數字與實際業績，以有效地評估企業的表現。</span></li>
+                                <li class="flex items-start"><i data-lucide="check" class="w-4 h-4 text-green-500 mt-0.5 mr-2 flex-shrink-0"></i><span class="recite-target">預算應用於改善企業的表現。</span></li>
+                                <li class="flex items-start"><i data-lucide="check" class="w-4 h-4 text-green-500 mt-0.5 mr-2 flex-shrink-0"></i><span class="recite-target">在某些情況下，預算可以在執行期間作出調整。</span></li>
+                            </ul>
+                        </div>
+
+                        <!-- Uses -->
+                        <div class="mb-8">
+                            <h4 class="font-bold text-gray-800 mb-3 border-l-4 border-red-500 pl-3 flex items-center">
+                                2. 預算控制的用途 <span class="important-tag ml-2">重點</span>
+                            </h4>
+                            <div class="grid gap-3 sm:grid-cols-2">
+                                <div class="bg-red-50 p-3 rounded flex items-start border border-red-100">
+                                    <i data-lucide="calendar-check" class="w-5 h-5 text-red-600 mr-2 mt-0.5 flex-shrink-0"></i>
+                                    <div>
+                                        <span class="font-bold text-red-800 text-sm block">促使各部門早作規劃</span>
+                                        <span class="recite-target text-xs text-gray-600">管理人員會仔細分析自己部門的能力和限制，有助企業從中發現潛在問題和未來良機。</span>
+                                    </div>
+                                </div>
+                                <div class="bg-red-50 p-3 rounded flex items-start border border-red-100">
+                                    <i data-lucide="message-square" class="w-5 h-5 text-red-600 mr-2 mt-0.5 flex-shrink-0"></i>
+                                    <div>
+                                        <span class="font-bold text-red-800 text-sm block">改善企業內部的溝通和協調</span>
+                                        <span class="recite-target text-xs text-gray-600">所有部門須共同制定商業計劃並取得共識。</span>
+                                    </div>
+                                </div>
+                                <div class="bg-red-50 p-3 rounded flex items-start border border-red-100">
+                                    <i data-lucide="target" class="w-5 h-5 text-red-600 mr-2 mt-0.5 flex-shrink-0"></i>
+                                    <div>
+                                        <span class="font-bold text-red-800 text-sm block">提供標準讓企業評估各部門和管理人員的表現</span>
+                                        <span class="recite-target text-xs text-gray-600">預算可視為各部門須要達到的目標。</span>
+                                    </div>
+                                </div>
+                                <div class="bg-red-50 p-3 rounded flex items-start border border-red-100">
+                                    <i data-lucide="clock" class="w-5 h-5 text-red-600 mr-2 mt-0.5 flex-shrink-0"></i>
+                                    <div>
+                                        <span class="font-bold text-red-800 text-sm block">節省管理層的時間和精力</span>
+                                        <span class="recite-target text-xs text-gray-600">高級管理層可透過預算控制輕易找出表現遜色的部門，並集中處理相關問題。</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Limitations -->
+                        <div>
+                            <h4 class="font-bold text-gray-800 mb-3 border-l-4 border-red-500 pl-3 flex items-center">
+                                3. 預算控制的限制 <span class="important-tag ml-2">重點</span>
+                            </h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                                <div class="bg-white border border-gray-200 p-2 rounded"><span class="recite-target">難以預測不斷變化的營商環境：企業可能很快發現所估計的收入和支出已變得不準確。</span></div>
+                                <div class="bg-white border border-gray-200 p-2 rounded"><span class="recite-target">無法取代管理人員的智慧：預算控制不免牽涉主觀判斷，不能取代管理人員的營商經驗、管理知識和技巧。</span></div>
+                                <div class="bg-white border border-gray-200 p-2 rounded"><span class="recite-target">估計的數字可能不準確或不切實際：如果財務數字不準確，企業便不能有效地執行預算控制。</span></div>
+                                <div class="bg-white border border-gray-200 p-2 rounded"><span class="recite-target">只着重財務表現：不能評估企業一些不能量化的成就（如員工士氣、產品質素）。</span></div>
+                                <div class="bg-white border border-gray-200 p-2 rounded"><span class="recite-target">或會阻礙員工追求更好的表現：員工一旦達到預算的目標，便不願意在餘下的時間內繼續努力工作。</span></div>
+                                <div class="bg-white border border-gray-200 p-2 rounded"><span class="recite-target">耗時和成本不菲：編製過程需要大量人力物力，且須持續監控各部門。</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 4. 預算差異與補救措施 -->
+                <section class="mb-10">
+                    <h2 class="text-xl font-bold text-red-800 mb-4 flex items-center">
+                        <span class="w-8 h-8 bg-red-100 text-red-600 rounded-lg flex items-center justify-center mr-3 text-sm">四</span>
+                        預算差異與補救措施 (2.5)
+                    </h2>
+                    
+                    <div class="section-card">
+                        <p class="mb-4 text-gray-700 recite-target note-text">預算差異是指預算數額和實際數額之間的差額。</p>
+
+                        <!-- Variance Types -->
+                        <div class="flex flex-col sm:flex-row gap-4 mb-8">
+                            <div class="flex-1 bg-green-50 p-3 rounded border border-green-200">
+                                <span class="font-bold text-green-700 block mb-1">有利差異 (Favourable variance)</span>
+                                <span class="recite-target text-sm text-gray-600">實際收入高於預算數額，或實際支出低於預算數額。</span>
+                            </div>
+                            <div class="flex-1 bg-red-50 p-3 rounded border border-red-200">
+                                <span class="font-bold text-red-700 block mb-1">不利差異 (Unfavourable variance)</span>
+                                <span class="recite-target text-sm text-gray-600">實際收入低於預算數額，或實際支出高於預算數額。</span>
+                            </div>
+                        </div>
+
+                        <!-- Causes & Remedies Table -->
+                        <h4 class="font-bold text-gray-800 mb-3 border-l-4 border-red-500 pl-3 flex items-center">
+                            預算差異的成因與補救措施 <span class="important-tag ml-2">重點</span>
+                        </h4>
+                        <div class="overflow-x-auto">
+                            <table class="custom-table w-full text-sm">
+                                <thead>
+                                    <tr>
+                                        <th class="w-1/5 bg-red-100">差異類別</th>
+                                        <th class="w-2/5 bg-red-50">成因 (不利差異)</th>
+                                        <th class="w-2/5 bg-green-50">補救措施</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="font-bold text-red-800 align-top">銷售額差異</td>
+                                        <td class="bg-white align-top">
+                                            <ul class="list-disc list-inside space-y-1">
+                                                <li class="recite-target">實際售價低於預算</li>
+                                                <li class="recite-target">實際銷量低於預算</li>
+                                                <li class="recite-target">售價低的產品銷量佔整體比例高於預算</li>
+                                            </ul>
+                                        </td>
+                                        <td class="bg-white align-top">
+                                            <ul class="list-disc list-inside space-y-1">
+                                                <li class="recite-target">提高品牌知名度</li>
+                                                <li class="recite-target">投放更多廣告</li>
+                                                <li class="recite-target">提供更多折扣</li>
+                                                <li class="recite-target">降低售價以採取更進取的定價策略</li>
+                                            </ul>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold text-red-800 align-top bg-gray-50">原料成本差異</td>
+                                        <td class="bg-gray-50 align-top">
+                                            <ul class="list-disc list-inside space-y-1">
+                                                <li class="recite-target">實際原料價格高於預算</li>
+                                                <li class="recite-target">企業生產每件產品所用的原料多於預算（如聘用不熟練員工、原料失竊）</li>
+                                            </ul>
+                                        </td>
+                                        <td class="bg-gray-50 align-top">
+                                            <ul class="list-disc list-inside space-y-1">
+                                                <li class="recite-target">增加每次購入原料的數量以獲取較大的價格折扣</li>
+                                                <li class="recite-target">物色提供更便宜原料的供應商</li>
+                                                <li class="recite-target">向員工提供更多培訓以減少浪費</li>
+                                                <li class="recite-target">將生產機器更換為效率較高的型號</li>
+                                            </ul>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold text-red-800 align-top">人工差異</td>
+                                        <td class="bg-white align-top">
+                                            <ul class="list-disc list-inside space-y-1">
+                                                <li class="recite-target">實際工資水平高於預算（如工會要求加薪）</li>
+                                                <li class="recite-target">實際勞工效率低於預算（如員工培訓不足、士氣低落）</li>
+                                            </ul>
+                                        </td>
+                                        <td class="bg-white align-top">
+                                            <ul class="list-disc list-inside space-y-1">
+                                                <li class="recite-target">把部分生產工序外判至工資水平較低的地區</li>
+                                                <li class="recite-target">聘請兼職員工取代部分全職員工</li>
+                                                <li class="recite-target">提供更多培訓</li>
+                                                <li class="recite-target">把部分生產程序自動化</li>
+                                            </ul>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Analogy Section -->
+                <section class="mb-10">
+                    <div class="bg-gradient-to-r from-orange-50 to-red-50 border border-orange-100 rounded-lg p-5 shadow-sm">
+                        <h2 class="text-lg font-bold text-red-900 mb-3 flex items-center">
+                            <span class="text-xl mr-2">💡</span> 類比理解： 「預算編製」「長途旅行做規劃」
+                        </h2>
+                        <ul class="space-y-2 text-sm text-red-800">
+                            <li class="flex items-start">
+                                <span class="bg-red-200 text-red-800 font-bold px-2 py-0.5 rounded text-xs mr-2 mt-0.5 flex-shrink-0">編製預算</span>
+                                <span class="recite-target">是預先估計油費、飯錢與住宿費（未來收支預測）。</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="bg-red-200 text-red-800 font-bold px-2 py-0.5 rounded text-xs mr-2 mt-0.5 flex-shrink-0">協調與計劃</span>
+                                <span class="recite-target">是確定大家想去的地方都一致，並把錢分給負責訂房和買票的人。</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="bg-red-200 text-red-800 font-bold px-2 py-0.5 rounded text-xs mr-2 mt-0.5 flex-shrink-0">預算控制</span>
+                                <span class="recite-target">是在旅行途中隨時對帳，看看有沒有花超標。</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="bg-red-200 text-red-800 font-bold px-2 py-0.5 rounded text-xs mr-2 mt-0.5 flex-shrink-0">限制</span>
+                                <span class="recite-target">是如果突然遇到暴雨（營商環境變化）或油價暴漲，原本的規劃可能就不準了。</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="bg-red-200 text-red-800 font-bold px-2 py-0.5 rounded text-xs mr-2 mt-0.5 flex-shrink-0">差異與補救</span>
+                                <span class="recite-target">是發現飯錢花多了（不利差異），是因為吃了太貴的大餐（成因），接下來就要吃簡單一點或找更便宜的餐館（補救措施）。</span>
+                            </li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Navigation Buttons -->
+                <div class="flex justify-between mt-8 mb-12">
+                    <a href="page16.html" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium flex items-center transition">
+                        <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i> 上一課題：財務分析
+                    </a>
+                    <a href="page18.html" class="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium flex items-center shadow-lg transition transform hover:-translate-y-0.5">
+                        下一課題：融資方式 <i data-lucide="arrow-right" class="w-4 h-4 ml-2"></i>
+                    </a>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        // Mobile Sidebar Toggle Logic
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+
+        mobileMenuBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('hidden');
+            sidebar.classList.toggle('-translate-x-full');
+            if (!sidebar.classList.contains('hidden')) {
+                overlay.classList.remove('hidden');
+            } else {
+                overlay.classList.add('hidden');
+            }
+        });
+
+        overlay.addEventListener('click', () => {
+            sidebar.classList.add('hidden');
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('hidden');
+        });
+
+        // Sidebar Accordion Logic
+        function toggleMenu(menuId, btn) {
+            const menu = document.getElementById(menuId);
+            const isExpanded = btn.getAttribute('aria-expanded') === 'true';
+            
+            // Toggle current menu
+            if (isExpanded) {
+                menu.classList.add('hidden');
+                btn.setAttribute('aria-expanded', 'false');
+            } else {
+                menu.classList.remove('hidden');
+                btn.setAttribute('aria-expanded', 'true');
+            }
+        }
+
+        // PDF Download Logic
+        function downloadPDF() {
+            const content = document.querySelector('.max-w-4xl');
+            const clone = content.cloneNode(true);
+            
+            // Remove navigation buttons
+            const navButtons = clone.querySelector('.flex.justify-between.mt-8.mb-12');
+            if(navButtons) navButtons.remove();
+
+            // Remove blur effects
+            const blurredElements = clone.querySelectorAll('.recite-blur');
+            blurredElements.forEach(el => {
+                el.classList.remove('recite-blur');
+                el.style.color = 'inherit'; 
+                el.style.textShadow = 'none';
+                el.style.backgroundColor = 'transparent';
+            });
+
+            const opt = {
+                margin:       [10, 10, 10, 10],
+                filename:     'BAFS_Ch2_Budgeting.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, logging: false, letterRendering: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+            };
+
+            html2pdf().set(opt).from(clone).save();
+        }
+
+        // Recite Mode Logic
+        const reciteToggle = document.getElementById('recite-toggle');
+        const contentArea = document.getElementById('content-area');
+        
+        reciteToggle.addEventListener('change', function() {
+            const targets = document.querySelectorAll('.recite-target');
+            
+            if (this.checked) {
+                targets.forEach(el => {
+                    el.classList.add('recite-blur');
+                    el.classList.remove('recite-revealed');
+                });
+            } else {
+                targets.forEach(el => {
+                    el.classList.remove('recite-blur');
+                    el.classList.remove('recite-revealed');
+                });
+            }
+        });
+
+        // Click to reveal logic
+        contentArea.addEventListener('click', function(e) {
+            let target = e.target;
+            if (target.closest('.recite-blur')) {
+                target.closest('.recite-blur').classList.toggle('recite-revealed');
+            }
+        });
+    </script>
+</body>
+</html>

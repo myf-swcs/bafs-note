@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>6. 風險管理 - BAFS 2026</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- PDF Generation Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .important-tag {
+            background-color: #fee2e2;
+            color: #b91c1c;
+            padding: 0.1rem 0.4rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            margin-left: 0.5rem;
+            vertical-align: middle;
+            border: 1px solid #fecaca;
+        }
+        .section-card {
+            background: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid #e5e7eb;
+        }
+        
+        /* Sidebar Scrollbar */
+        .sidebar-scroll::-webkit-scrollbar { width: 6px; }
+        .sidebar-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
+        .sidebar-scroll::-webkit-scrollbar-thumb { background: #c7c7c7; border-radius: 3px; }
+        .sidebar-scroll::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+
+        /* Recite Mode Styles */
+        .recite-blur {
+            color: transparent !important;
+            text-shadow: 0 0 10px rgba(0,0,0,0.5);
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.3s ease;
+            position: relative;
+            background-color: rgba(0,0,0,0.03);
+            border-radius: 4px;
+        }
+        .recite-blur:hover {
+            text-shadow: 0 0 6px rgba(0,0,0,0.7);
+            background-color: rgba(0,0,0,0.06);
+        }
+        .recite-blur::after {
+            content: '點擊顯示';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 0.75rem;
+            color: #6b7280;
+            opacity: 0.7;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+        .recite-revealed {
+            color: inherit !important;
+            text-shadow: none !important;
+            background-color: transparent !important;
+        }
+        .recite-revealed::after {
+            display: none;
+        }
+        
+        /* Toggle Switch */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #dc2626; /* Red-600 */
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #dc2626;
+        }
+        
+        /* Typography for notes */
+        .note-text {
+            line-height: 1.6;
+        }
+
+        /* Step Process Styles */
+        .step-circle {
+            width: 2.5rem;
+            height: 2.5rem;
+            background-color: #fee2e2;
+            color: #b91c1c;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 1rem;
+            flex-shrink: 0;
+            border: 2px solid white;
+            box-shadow: 0 0 0 2px #fee2e2;
+        }
+        
+        /* Accordion Chevron Rotation */
+        .chevron-icon {
+            transition: transform 0.3s ease;
+        }
+        .group[aria-expanded="true"] .chevron-icon {
+            transform: rotate(180deg);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col text-gray-800">
+
+    <!-- Navbar -->
+    <nav class="bg-white shadow-md sticky top-0 z-50 h-16 flex-none">
+        <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8 h-full">
+            <div class="flex justify-between items-center h-full">
+                <div class="flex items-center">
+                    <button id="mobile-menu-btn" class="lg:hidden p-2 rounded-md text-gray-600 hover:text-blue-600 hover:bg-gray-100 focus:outline-none mr-2">
+                        <i data-lucide="menu" class="h-6 w-6"></i>
+                    </button>
+                    <a href="index.html" class="flex items-center hover:opacity-80 transition">
+                        <i data-lucide="book-open" class="h-8 w-8 text-blue-600 mr-2"></i>
+                        <span class="font-bold text-xl tracking-tight text-gray-900 hidden sm:block">HKDSE BAFS 2026</span>
+                        <span class="font-bold text-xl tracking-tight text-gray-900 sm:hidden">BAFS</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <!-- PDF Download Button -->
+                    <button onclick="downloadPDF()" class="flex items-center text-gray-600 hover:text-red-600 font-medium text-sm bg-gray-100 hover:bg-red-50 px-3 py-1.5 rounded-full transition mr-2" title="下載筆記 PDF">
+                        <i data-lucide="file-down" class="w-4 h-4 mr-1"></i>
+                        <span class="hidden sm:inline">下載 PDF</span>
+                    </button>
+
+                    <!-- Recite Mode Toggle -->
+                    <div class="flex items-center mr-2">
+                        <span class="text-sm font-medium text-gray-700 mr-2 hidden sm:block">背書模式</span>
+                        <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                            <input type="checkbox" name="toggle" id="recite-toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer border-gray-300 transition-all duration-300 ease-in-out left-0 top-0"/>
+                            <label for="recite-toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer transition-colors duration-300"></label>
+                        </div>
+                    </div>
+
+                    <a href="index.html" class="text-gray-500 hover:text-blue-600 font-medium text-sm flex items-center bg-gray-100 px-3 py-1.5 rounded-full transition">
+                        <i data-lucide="home" class="w-4 h-4 mr-1"></i> 返回目錄
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="flex flex-grow overflow-hidden relative">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="bg-white w-64 border-r border-gray-200 flex-none hidden lg:block lg:relative absolute z-40 h-full overflow-y-auto sidebar-scroll transition-all duration-300 transform -translate-x-full lg:translate-x-0 top-0 left-0">
+            <div class="p-4">
+                <h2 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">課程導航</h2>
+                
+                <!-- B1 -->
+                <div class="mb-4">
+                    <button class="w-full flex justify-between items-center text-left font-bold text-blue-700 mb-2 group hover:text-blue-800 transition focus:outline-none" onclick="toggleMenu('menu-b1', this)" aria-expanded="false">
+                        <span class="flex items-center"><i data-lucide="briefcase" class="w-4 h-4 mr-2"></i>B1 管理導論</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4 chevron-icon"></i>
+                    </button>
+                    <ul id="menu-b1" class="space-y-1 text-sm ml-2 border-l-2 border-gray-100 pl-2 hidden">
+                        <li><a href="page1.html" class="block py-1.5 px-2 rounded hover:bg-blue-50 text-gray-600 hover:text-blue-600">1. 管理功能</a></li>
+                        <li><a href="page2.html" class="block py-1.5 px-2 rounded hover:bg-blue-50 text-gray-600 hover:text-blue-600">2. 主要商業功能</a></li>
+                        <li><a href="page3.html" class="block py-1.5 px-2 rounded hover:bg-blue-50 text-gray-600 hover:text-blue-600">3. 中小型企業</a></li>
+                    </ul>
+                </div>
+
+                <!-- B2/B3 -->
+                <div class="mb-4">
+                    <button class="w-full flex justify-between items-center text-left font-bold text-green-700 mb-2 group hover:text-green-800 transition focus:outline-none" onclick="toggleMenu('menu-b2', this)" aria-expanded="false">
+                        <span class="flex items-center"><i data-lucide="users" class="w-4 h-4 mr-2"></i>B2/B3 人力資源</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4 chevron-icon"></i>
+                    </button>
+                    <ul id="menu-b2" class="space-y-1 text-sm ml-2 border-l-2 border-gray-100 pl-2 hidden">
+                        <li><a href="page4.html" class="block py-1.5 px-2 rounded hover:bg-green-50 text-gray-600 hover:text-green-600">1. 人力規劃和員工編制</a></li>
+                        <li><a href="page5.html" class="block py-1.5 px-2 rounded hover:bg-green-50 text-gray-600 hover:text-green-600">2. 員工考績</a></li>
+                        <li><a href="page6.html" class="block py-1.5 px-2 rounded hover:bg-green-50 text-gray-600 hover:text-green-600">3. 報酬管理</a></li>
+                        <li><a href="page7.html" class="block py-1.5 px-2 rounded hover:bg-green-50 text-gray-600 hover:text-green-600">4. 培訓和發展</a></li>
+                        <li><a href="page8.html" class="block py-1.5 px-2 rounded hover:bg-green-50 text-gray-600 hover:text-green-600">5. 發展優質人力資源</a></li>
+                    </ul>
+                </div>
+
+                <!-- B4-B6 -->
+                <div class="mb-4">
+                    <button class="w-full flex justify-between items-center text-left font-bold text-purple-700 mb-2 group hover:text-purple-800 transition focus:outline-none" onclick="toggleMenu('menu-b4', this)" aria-expanded="false">
+                        <span class="flex items-center"><i data-lucide="shopping-bag" class="w-4 h-4 mr-2"></i>B4-B6 市場營銷</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4 chevron-icon"></i>
+                    </button>
+                    <ul id="menu-b4" class="space-y-1 text-sm ml-2 border-l-2 border-gray-100 pl-2 hidden">
+                        <li><a href="page8.html" class="block py-1.5 px-2 rounded hover:bg-purple-50 text-gray-600 hover:text-purple-600">1. 市場營銷的角色</a></li>
+                        <li><a href="page10.html" class="block py-1.5 px-2 rounded hover:bg-purple-50 text-gray-600 hover:text-purple-600">2. 市場研究</a></li>
+                        <li><a href="page11.html" class="block py-1.5 px-2 rounded hover:bg-purple-50 text-gray-600 hover:text-purple-600">3. 消費者行為</a></li>
+                        <li><a href="page12.html" class="block py-1.5 px-2 rounded hover:bg-purple-50 text-gray-600 hover:text-purple-600">4. 市場區隔與定位</a></li>
+                        <li><a href="page13.html" class="block py-1.5 px-2 rounded hover:bg-purple-50 text-gray-600 hover:text-purple-600">5. 市場營銷策略 (一)</a></li>
+                        <li><a href="page14.html" class="block py-1.5 px-2 rounded hover:bg-purple-50 text-gray-600 hover:text-purple-600">6. 市場營銷策略 (二)</a></li>
+                        <li><a href="page15.html" class="block py-1.5 px-2 rounded hover:bg-purple-50 text-gray-600 hover:text-purple-600">7. 顧客關係管理</a></li>
+                    </ul>
+                </div>
+
+                <!-- B7-B9 (Expanded by default) -->
+                <div class="mb-4">
+                    <button class="w-full flex justify-between items-center text-left font-bold text-red-700 mb-2 group hover:text-red-800 transition focus:outline-none" onclick="toggleMenu('menu-b7', this)" aria-expanded="true">
+                        <span class="flex items-center"><i data-lucide="bar-chart-3" class="w-4 h-4 mr-2"></i>B7-B9 財務管理</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4 chevron-icon"></i>
+                    </button>
+                    <ul id="menu-b7" class="space-y-1 text-sm ml-2 border-l-2 border-gray-100 pl-2">
+                        <li><a href="page16.html" class="block py-1.5 px-2 rounded hover:bg-red-50 text-red-600 hover:text-red-600">1. 財務分析</a></li>
+                        <li><a href="page17.html" class="block py-1.5 px-2 rounded hover:bg-red-50 text-red-600 hover:text-red-600">2. 預算編製</a></li>
+                        <li><a href="page18.html" class="block py-1.5 px-2 rounded hover:bg-red-50 text-red-600 hover:text-red-600">3. 融資方式</a></li>
+                        <li><a href="page19.html" class="block py-1.5 px-2 rounded hover:bg-red-50 text-red-600 hover:text-red-600">4. 資本投資評估</a></li>
+                        <li><a href="page20.html" class="block py-1.5 px-2 rounded hover:bg-red-50 text-red-600 hover:text-red-600">5. 營運資金管理</a></li>
+                        <li><a href="page21.html" class="block py-1.5 px-2 rounded bg-red-50 text-red-600 font-medium">6. 風險管理</a></li>
+                    </ul>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Overlay for mobile sidebar -->
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black opacity-50 z-30 hidden lg:hidden"></div>
+
+        <!-- Main Content -->
+        <main class="flex-grow overflow-y-auto h-full p-4 sm:p-8 bg-gray-50" id="content-area">
+            <div class="max-w-4xl mx-auto">
+                <!-- Header -->
+                <div class="mb-8 border-b pb-4">
+                    <div class="flex items-center text-sm text-gray-500 mb-2">
+                        <span>B7-B9 財務管理</span>
+                        <i data-lucide="chevron-right" class="w-4 h-4 mx-2"></i>
+                        <span class="text-red-600 font-medium">6. 風險管理</span>
+                    </div>
+                    <h1 class="text-3xl font-extrabold text-gray-900">風險管理</h1>
+                    <p class="text-gray-600 mt-2 recite-target">識別各類風險並解釋迴避、承擔、減少及轉移等管理策略。</p>
+                </div>
+
+                <!-- Intro Alert -->
+                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-8">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i data-lucide="trending-up" class="h-5 w-5 text-yellow-500"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-yellow-700">
+                                <span class="font-bold">Trend_DSE 筆記：</span>
+                                根據趨勢分析，可保風險條件與風險管理策略是本章發問頻率極高的重點。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 1. 風險管理的定義與過程 -->
+                <section class="mb-10">
+                    <h2 class="text-xl font-bold text-red-800 mb-4 flex items-center">
+                        <span class="w-8 h-8 bg-red-100 text-red-600 rounded-lg flex items-center justify-center mr-3 text-sm">一</span>
+                        風險管理的定義與過程 (6.1, 6.2)
+                    </h2>
+                    
+                    <div class="section-card">
+                        <div class="mb-6">
+                            <p class="mb-2"><span class="font-bold text-red-800">• 定義：</span><span class="recite-target text-gray-700">風險管理是指企業透過識別和評估其面對的各種風險，從而制定風險管理措施，務求盡量減少損失的過程。</span></p>
+                        </div>
+
+                        <h4 class="font-bold text-gray-800 mb-3 border-l-4 border-red-500 pl-3">風險管理的過程</h4>
+                        <div class="space-y-4">
+                            <div class="flex items-start">
+                                <div class="step-circle">1</div>
+                                <div>
+                                    <span class="font-bold text-gray-800 block">第 1 步：識別風險</span>
+                                    <span class="recite-target text-sm text-gray-600">例如運用比率分析來識別無力償還債務的風險。</span>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <div class="step-circle">2</div>
+                                <div>
+                                    <span class="font-bold text-gray-800 block">第 2 步：量度風險</span>
+                                    <div class="recite-target text-sm text-gray-600 ml-2 border-l-2 border-gray-200 pl-2 mt-1">
+                                        <p>▪ 損失頻率：量度某段期間內出現損失的次數，這反映蒙受損失的可能性。</p>
+                                        <p>▪ 損失嚴重程度：量度損失的幅度。</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <div class="step-circle">3</div>
+                                <div>
+                                    <span class="font-bold text-gray-800 block">第 3 步：控制風險</span>
+                                    <span class="recite-target text-sm text-gray-600">比較風險的潛在損失和風險控制措施的成本，選擇最具成本效益的措施。</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 2. 風險的種類 -->
+                <section class="mb-10">
+                    <h2 class="text-xl font-bold text-red-800 mb-4 flex items-center">
+                        <span class="w-8 h-8 bg-red-100 text-red-600 rounded-lg flex items-center justify-center mr-3 text-sm">二</span>
+                        風險的種類 (6.3)
+                    </h2>
+
+                    <div class="section-card">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                            <!-- Pure Risk -->
+                            <div class="bg-red-50 p-4 rounded-lg border border-red-100">
+                                <h4 class="font-bold text-red-800 mb-2">純風險</h4>
+                                <p class="text-sm text-gray-600 mb-2 recite-target">指只有損失或沒有損失兩種機會的風險。</p>
+                                <ul class="list-disc list-inside text-xs text-gray-500 space-y-1">
+                                    <li><span class="font-bold">人身風險：</span><span class="recite-target">個人生病、受傷或死亡的可能性。</span></li>
+                                    <li><span class="font-bold">財產風險：</span><span class="recite-target">企業的財產遭毀壞或盜竊的可能性。</span></li>
+                                    <li><span class="font-bold">責任風險：</span><span class="recite-target">企業毀壞他人財產或導致他人受傷，因而在法律上須承擔賠償責任的可能性。</span></li>
+                                </ul>
+                            </div>
+                            <!-- Speculative Risk -->
+                            <div class="bg-white p-4 rounded-lg border border-gray-200">
+                                <h4 class="font-bold text-gray-800 mb-2">投機風險</h4>
+                                <p class="text-sm text-gray-600 mb-2 recite-target">指同時有損失和獲利機會的風險，如金融投資、利率風險、匯率風險。</p>
+                            </div>
+                        </div>
+
+                        <!-- Insurable Risks -->
+                        <div class="bg-white border border-gray-200 p-4 rounded-lg">
+                            <div class="flex justify-between items-center mb-3">
+                                <h4 class="font-bold text-gray-800 border-l-4 border-red-500 pl-3">可保風險和不可保風險 (6.3B)</h4>
+                                <span class="important-tag text-xs">重點</span>
+                            </div>
+                            <p class="text-sm text-gray-500 mb-3">風險必須滿足以下五個條件，才是可保風險：</p>
+                            <ul class="space-y-2 text-sm text-gray-700">
+                                <li class="flex items-start"><i data-lucide="check-square" class="w-4 h-4 text-red-500 mt-0.5 mr-2 flex-shrink-0"></i><span class="recite-target">1. 風險必須是非投機的：保險公司通常不會承保投機風險。</span></li>
+                                <li class="flex items-start"><i data-lucide="check-square" class="w-4 h-4 text-red-500 mt-0.5 mr-2 flex-shrink-0"></i><span class="recite-target">2. 損失必須由意外引起和無法控制：事故必須不是受保人故意造成的。</span></li>
+                                <li class="flex items-start"><i data-lucide="check-square" class="w-4 h-4 text-red-500 mt-0.5 mr-2 flex-shrink-0"></i><span class="recite-target">3. 不幸事故發生的概率是可估計的：保險公司須能估計事故發生的概率以計算保費。</span></li>
+                                <li class="flex items-start"><i data-lucide="check-square" class="w-4 h-4 text-red-500 mt-0.5 mr-2 flex-shrink-0"></i><span class="recite-target">4. 損失不可過於頻繁或過於微不足道：保險公司一般只承保超過一定金額的損失。</span></li>
+                                <li class="flex items-start"><i data-lucide="check-square" class="w-4 h-4 text-red-500 mt-0.5 mr-2 flex-shrink-0"></i><span class="recite-target">5. 同時蒙受損失的受保人數量不能太多：若大量受保人同時蒙受損失，保險公司可能無力就所有索償作出賠償（如戰爭）。</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 3. 風險對企業活動的影響 -->
+                <section class="mb-10">
+                    <h2 class="text-xl font-bold text-red-800 mb-4 flex items-center">
+                        <span class="w-8 h-8 bg-red-100 text-red-600 rounded-lg flex items-center justify-center mr-3 text-sm">三</span>
+                        風險對企業活動的影響 (6.4)
+                    </h2>
+                    
+                    <div class="section-card">
+                        <p class="mb-4 text-gray-700 note-text">企業面對不同種類的純風險時可能蒙受的損失包括：</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div class="bg-gray-50 p-3 rounded flex items-center">
+                                <i data-lucide="user-x" class="w-5 h-5 text-gray-500 mr-2"></i>
+                                <div>
+                                    <span class="font-bold text-sm block">人命傷亡</span>
+                                    <span class="recite-target text-xs text-gray-600">包括僱員和東主生病、受傷以至死亡。</span>
+                                </div>
+                            </div>
+                            <div class="bg-gray-50 p-3 rounded flex items-center">
+                                <i data-lucide="home" class="w-5 h-5 text-gray-500 mr-2"></i>
+                                <div>
+                                    <span class="font-bold text-sm block">財產損失</span>
+                                    <span class="recite-target text-xs text-gray-600">包括企業財產遭毀壞或盜竊。</span>
+                                </div>
+                            </div>
+                            <div class="bg-gray-50 p-3 rounded flex items-center">
+                                <i data-lucide="gavel" class="w-5 h-5 text-gray-500 mr-2"></i>
+                                <div>
+                                    <span class="font-bold text-sm block">法律責任</span>
+                                    <span class="recite-target text-xs text-gray-600">企業因毀壞他人財產，或導致僱員、顧客，以至其他人受傷時所支付的經濟賠償。</span>
+                                </div>
+                            </div>
+                            <div class="bg-gray-50 p-3 rounded flex items-center">
+                                <i data-lucide="trending-down" class="w-5 h-5 text-gray-500 mr-2"></i>
+                                <div>
+                                    <span class="font-bold text-sm block">利潤損失</span>
+                                    <span class="recite-target text-xs text-gray-600">企業因為不幸事件而暫停營業，導致失去本來可以賺取的利潤。</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 4. 風險管理策略 -->
+                <section class="mb-10">
+                    <h2 class="text-xl font-bold text-red-800 mb-4 flex items-center">
+                        <span class="w-8 h-8 bg-red-100 text-red-600 rounded-lg flex items-center justify-center mr-3 text-sm">四</span>
+                        風險管理策略 <span class="important-tag"><i data-lucide="star" class="w-3 h-3 mr-1"></i>重點</span> (6.5)
+                    </h2>
+                    
+                    <div class="section-card">
+                        <p class="text-sm text-gray-500 mb-4 bg-red-50 p-2 rounded">根據趨勢分析，這是本章發問頻率最高的核心課題。</p>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Avoidance -->
+                            <div class="bg-white border border-gray-200 p-4 rounded-lg shadow-sm hover:shadow-md transition">
+                                <div class="flex items-center mb-2">
+                                    <span class="bg-red-100 text-red-700 p-1.5 rounded mr-2"><i data-lucide="stop-circle" class="w-4 h-4"></i></span>
+                                    <h4 class="font-bold text-gray-800">1. 風險迴避</h4>
+                                </div>
+                                <p class="recite-target text-sm text-gray-600 mb-2">指完全不參與可能導致損失的活動，從而徹底消除可能導致損失的風險。</p>
+                                <p class="text-xs text-gray-500">常用於潛在損失過於龐大或發生概率很高的情況。</p>
+                            </div>
+
+                            <!-- Assumption -->
+                            <div class="bg-white border border-gray-200 p-4 rounded-lg shadow-sm hover:shadow-md transition">
+                                <div class="flex items-center mb-2">
+                                    <span class="bg-blue-100 text-blue-700 p-1.5 rounded mr-2"><i data-lucide="user" class="w-4 h-4"></i></span>
+                                    <h4 class="font-bold text-gray-800">2. 風險承擔</h4>
+                                </div>
+                                <p class="recite-target text-sm text-gray-600 mb-2">指透過預留一筆資金來應付潛在的損失，以自行承擔可能導致損失的風險。</p>
+                                <p class="text-xs text-gray-500">常用於潛在損失輕微的情況。</p>
+                            </div>
+
+                            <!-- Reduction -->
+                            <div class="bg-white border border-gray-200 p-4 rounded-lg shadow-sm hover:shadow-md transition">
+                                <div class="flex items-center mb-2">
+                                    <span class="bg-green-100 text-green-700 p-1.5 rounded mr-2"><i data-lucide="arrow-down-circle" class="w-4 h-4"></i></span>
+                                    <h4 class="font-bold text-gray-800">3. 風險減少</h4>
+                                </div>
+                                <p class="recite-target text-sm text-gray-600 mb-2">指透過減低損失頻率或損失嚴重程度，從而減低可能導致損失的風險。</p>
+                                <div class="text-xs bg-gray-50 p-2 rounded">
+                                    <p class="mb-1"><span class="font-bold">◦ 避免損失：</span><span class="recite-target">有助避免出現損失，即減低損失頻率的措施（如把現金放置在夾萬）。</span></p>
+                                    <p><span class="font-bold">◦ 減少損失：</span><span class="recite-target">在不幸事件發生時有助減低損失嚴重程度的措施（如安裝自動灑水系統）。</span></p>
+                                </div>
+                            </div>
+
+                            <!-- Transfer -->
+                            <div class="bg-white border border-gray-200 p-4 rounded-lg shadow-sm hover:shadow-md transition">
+                                <div class="flex items-center mb-2">
+                                    <span class="bg-purple-100 text-purple-700 p-1.5 rounded mr-2"><i data-lucide="share-2" class="w-4 h-4"></i></span>
+                                    <h4 class="font-bold text-gray-800">4. 風險轉移</h4>
+                                </div>
+                                <p class="recite-target text-sm text-gray-600">指透過購買保險或簽訂合約，把可能導致損失的風險轉移給他人來承擔。</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 5. 適用於企業的保險保障 -->
+                <section class="mb-10">
+                    <h2 class="text-xl font-bold text-red-800 mb-4 flex items-center">
+                        <span class="w-8 h-8 bg-red-100 text-red-600 rounded-lg flex items-center justify-center mr-3 text-sm">五</span>
+                        適用於企業的保險保障 <span class="important-tag"><i data-lucide="star" class="w-3 h-3 mr-1"></i>重點</span> (6.6)
+                    </h2>
+                    
+                    <div class="section-card">
+                        <div class="space-y-4 text-sm text-gray-700">
+                            <!-- Car -->
+                            <div class="border-b border-gray-100 pb-3">
+                                <h5 class="font-bold text-red-800 mb-1 flex items-center"><i data-lucide="car" class="w-4 h-4 mr-2"></i>汽車保險</h5>
+                                <div class="ml-6 space-y-1">
+                                    <p><span class="font-bold">◦ 汽車第三者（責任）保險：</span><span class="recite-target">保障因駕駛汽車導致第三者受傷、死亡或蒙受財產損失的賠償。</span></p>
+                                    <p><span class="font-bold">◦ 綜合保險：</span><span class="recite-target">包括第三者（責任）保險的保障，以及受保人汽車因意外導致的損毀。</span></p>
+                                </div>
+                            </div>
+
+                            <!-- Fidelity -->
+                            <div class="border-b border-gray-100 pb-3">
+                                <h5 class="font-bold text-red-800 mb-1 flex items-center"><i data-lucide="shield-check" class="w-4 h-4 mr-2"></i>員工誠信保險</h5>
+                                <p class="ml-6 recite-target">當僱員的不誠實行為令僱主損失金錢時，向僱主提供賠償。</p>
+                            </div>
+
+                            <!-- Liability -->
+                            <div class="border-b border-gray-100 pb-3">
+                                <h5 class="font-bold text-red-800 mb-1 flex items-center"><i data-lucide="alert-triangle" class="w-4 h-4 mr-2"></i>責任保險</h5>
+                                <div class="ml-6 space-y-1">
+                                    <p><span class="font-bold">◦ 公眾責任保險：</span><span class="recite-target">如果企業的營運導致第三者受傷或蒙受財產損失，負上賠償責任時，由保險公司支付賠償。</span></p>
+                                    <p><span class="font-bold">◦ 僱員賠償保險：</span><span class="recite-target">就僱員因工受傷或死亡所招致的醫療費用和賠償金額作出經濟補償。法例規定僱主必須購買。</span></p>
+                                </div>
+                            </div>
+
+                            <!-- Combined -->
+                            <div>
+                                <h5 class="font-bold text-red-800 mb-1 flex items-center"><i data-lucide="layers" class="w-4 h-4 mr-2"></i>保單組合（綜合保單）</h5>
+                                <p class="ml-6 recite-target">涵蓋企業一般所需的保單（如財產保險和責任保險），其保障範圍可度身訂造。</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Analogy Section -->
+                <section class="mb-10">
+                    <div class="bg-gradient-to-r from-red-50 to-orange-50 border border-red-100 rounded-lg p-5 shadow-sm">
+                        <h2 class="text-lg font-bold text-red-900 mb-3 flex items-center">
+                            <span class="text-xl mr-2">💡</span> 類比理解： 「風險管理」「守護一座城堡」
+                        </h2>
+                        <ul class="space-y-3 text-sm text-red-800">
+                            <li class="flex items-start">
+                                <span class="font-bold mr-2 text-red-600 flex-shrink-0">• 風險迴避（重點）：</span>
+                                <span class="recite-target">是不去危險的森林探險，從根源消除危險。</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="font-bold mr-2 text-red-600 flex-shrink-0">• 風險減少（重點）：</span>
+                                <span class="recite-target">是加固城牆（避免損失）或在城內準備滅火沙桶（減少損失）。</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="font-bold mr-2 text-red-600 flex-shrink-0">• 風險轉移（重點）：</span>
+                                <span class="recite-target">是向保險公會交保費，萬一城堡被火燒了，有人會賠錢給你重蓋。</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="font-bold mr-2 text-red-600 flex-shrink-0">• 責任保險（重點）：</span>
+                                <span class="recite-target">是萬一你城堡的石頭掉下來砸到路人（公眾責任）或你的守衛受傷了（僱員賠償），有保險能幫你出這筆賠償費。</span>
+                            </li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Navigation Buttons -->
+                <div class="flex justify-between mt-8 mb-12">
+                    <a href="page20.html" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium flex items-center transition">
+                        <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i> 上一課題：營運資金管理
+                    </a>
+                    <a href="index.html" class="px-6 py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-900 font-medium flex items-center shadow-lg transition transform hover:-translate-y-0.5">
+                        <i data-lucide="home" class="w-4 h-4 mr-2"></i> 返回首頁
+                    </a>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        // Mobile Sidebar Toggle Logic
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+
+        mobileMenuBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('hidden');
+            sidebar.classList.toggle('-translate-x-full');
+            if (!sidebar.classList.contains('hidden')) {
+                overlay.classList.remove('hidden');
+            } else {
+                overlay.classList.add('hidden');
+            }
+        });
+
+        overlay.addEventListener('click', () => {
+            sidebar.classList.add('hidden');
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('hidden');
+        });
+
+        // Sidebar Accordion Logic
+        function toggleMenu(menuId, btn) {
+            const menu = document.getElementById(menuId);
+            const isExpanded = btn.getAttribute('aria-expanded') === 'true';
+            
+            // Toggle current menu
+            if (isExpanded) {
+                menu.classList.add('hidden');
+                btn.setAttribute('aria-expanded', 'false');
+            } else {
+                menu.classList.remove('hidden');
+                btn.setAttribute('aria-expanded', 'true');
+            }
+        }
+
+        // PDF Download Logic
+        function downloadPDF() {
+            const content = document.querySelector('.max-w-4xl');
+            const clone = content.cloneNode(true);
+            
+            // Remove navigation buttons
+            const navButtons = clone.querySelector('.flex.justify-between.mt-8.mb-12');
+            if(navButtons) navButtons.remove();
+
+            // Remove blur effects
+            const blurredElements = clone.querySelectorAll('.recite-blur');
+            blurredElements.forEach(el => {
+                el.classList.remove('recite-blur');
+                el.style.color = 'inherit'; 
+                el.style.textShadow = 'none';
+                el.style.backgroundColor = 'transparent';
+            });
+
+            const opt = {
+                margin:       [10, 10, 10, 10],
+                filename:     'BAFS_Ch6_Risk_Management.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, logging: false, letterRendering: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+            };
+
+            html2pdf().set(opt).from(clone).save();
+        }
+
+        // Recite Mode Logic
+        const reciteToggle = document.getElementById('recite-toggle');
+        const contentArea = document.getElementById('content-area');
+        
+        reciteToggle.addEventListener('change', function() {
+            const targets = document.querySelectorAll('.recite-target');
+            
+            if (this.checked) {
+                targets.forEach(el => {
+                    el.classList.add('recite-blur');
+                    el.classList.remove('recite-revealed');
+                });
+            } else {
+                targets.forEach(el => {
+                    el.classList.remove('recite-blur');
+                    el.classList.remove('recite-revealed');
+                });
+            }
+        });
+
+        // Click to reveal logic
+        contentArea.addEventListener('click', function(e) {
+            let target = e.target;
+            if (target.closest('.recite-blur')) {
+                target.closest('.recite-blur').classList.toggle('recite-revealed');
+            }
+        });
+    </script>
+</body>
+</html>

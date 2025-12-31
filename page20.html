@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5. 營運資金管理 - BAFS 2026</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- PDF Generation Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .important-tag {
+            background-color: #fee2e2;
+            color: #b91c1c;
+            padding: 0.1rem 0.4rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            margin-left: 0.5rem;
+            vertical-align: middle;
+            border: 1px solid #fecaca;
+        }
+        .section-card {
+            background: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid #e5e7eb;
+        }
+        
+        /* Sidebar Scrollbar */
+        .sidebar-scroll::-webkit-scrollbar { width: 6px; }
+        .sidebar-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
+        .sidebar-scroll::-webkit-scrollbar-thumb { background: #c7c7c7; border-radius: 3px; }
+        .sidebar-scroll::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+
+        /* Recite Mode Styles */
+        .recite-blur {
+            color: transparent !important;
+            text-shadow: 0 0 10px rgba(0,0,0,0.5);
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.3s ease;
+            position: relative;
+            background-color: rgba(0,0,0,0.03);
+            border-radius: 4px;
+        }
+        .recite-blur:hover {
+            text-shadow: 0 0 6px rgba(0,0,0,0.7);
+            background-color: rgba(0,0,0,0.06);
+        }
+        .recite-blur::after {
+            content: '點擊顯示';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 0.75rem;
+            color: #6b7280;
+            opacity: 0.7;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+        .recite-revealed {
+            color: inherit !important;
+            text-shadow: none !important;
+            background-color: transparent !important;
+        }
+        .recite-revealed::after {
+            display: none;
+        }
+        
+        /* Toggle Switch */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #dc2626; /* Red-600 */
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #dc2626;
+        }
+        
+        /* Typography for notes */
+        .note-text {
+            line-height: 1.6;
+        }
+
+        /* Cycle Diagram Styles */
+        .cycle-step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+            padding: 10px;
+            background: #fff;
+            border: 1px solid #fee2e2;
+            border-radius: 8px;
+            z-index: 2;
+        }
+        .cycle-arrow {
+            flex: 0 0 40px;
+            height: 2px;
+            background: #ef4444;
+            position: relative;
+            top: 20px; /* Adjust based on layout */
+        }
+        .cycle-arrow::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: -4px;
+            width: 0; 
+            height: 0; 
+            border-top: 5px solid transparent;
+            border-bottom: 5px solid transparent;
+            border-left: 5px solid #ef4444;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col text-gray-800">
+
+    <!-- Navbar -->
+    <nav class="bg-white shadow-md sticky top-0 z-50 h-16 flex-none">
+        <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8 h-full">
+            <div class="flex justify-between items-center h-full">
+                <div class="flex items-center">
+                    <button id="mobile-menu-btn" class="lg:hidden p-2 rounded-md text-gray-600 hover:text-blue-600 hover:bg-gray-100 focus:outline-none mr-2">
+                        <i data-lucide="menu" class="h-6 w-6"></i>
+                    </button>
+                    <a href="index.html" class="flex items-center hover:opacity-80 transition">
+                        <i data-lucide="book-open" class="h-8 w-8 text-blue-600 mr-2"></i>
+                        <span class="font-bold text-xl tracking-tight text-gray-900 hidden sm:block">HKDSE BAFS 2026</span>
+                        <span class="font-bold text-xl tracking-tight text-gray-900 sm:hidden">BAFS</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <!-- PDF Download Button -->
+                    <button onclick="downloadPDF()" class="flex items-center text-gray-600 hover:text-red-600 font-medium text-sm bg-gray-100 hover:bg-red-50 px-3 py-1.5 rounded-full transition mr-2" title="下載筆記 PDF">
+                        <i data-lucide="file-down" class="w-4 h-4 mr-1"></i>
+                        <span class="hidden sm:inline">下載 PDF</span>
+                    </button>
+
+                    <!-- Recite Mode Toggle -->
+                    <div class="flex items-center mr-2">
+                        <span class="text-sm font-medium text-gray-700 mr-2 hidden sm:block">背書模式</span>
+                        <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                            <input type="checkbox" name="toggle" id="recite-toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer border-gray-300 transition-all duration-300 ease-in-out left-0 top-0"/>
+                            <label for="recite-toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer transition-colors duration-300"></label>
+                        </div>
+                    </div>
+
+                    <a href="index.html" class="text-gray-500 hover:text-blue-600 font-medium text-sm flex items-center bg-gray-100 px-3 py-1.5 rounded-full transition">
+                        <i data-lucide="home" class="w-4 h-4 mr-1"></i> 返回目錄
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="flex flex-grow overflow-hidden relative">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="bg-white w-64 border-r border-gray-200 flex-none hidden lg:block lg:relative absolute z-40 h-full overflow-y-auto sidebar-scroll transition-all duration-300 transform -translate-x-full lg:translate-x-0 top-0 left-0">
+            <div class="p-4">
+                <h2 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">課程導航</h2>
+                
+                <!-- B1 -->
+                <div class="mb-4">
+                    <button class="w-full flex justify-between items-center text-left font-bold text-blue-700 mb-2 group hover:text-blue-800 transition focus:outline-none" onclick="toggleMenu('menu-b1', this)" aria-expanded="false">
+                        <span class="flex items-center"><i data-lucide="briefcase" class="w-4 h-4 mr-2"></i>B1 管理導論</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4 chevron-icon"></i>
+                    </button>
+                    <ul id="menu-b1" class="space-y-1 text-sm ml-2 border-l-2 border-gray-100 pl-2 hidden">
+                        <li><a href="page1.html" class="block py-1.5 px-2 rounded hover:bg-blue-50 text-gray-600 hover:text-blue-600">1. 管理功能</a></li>
+                        <li><a href="page2.html" class="block py-1.5 px-2 rounded hover:bg-blue-50 text-gray-600 hover:text-blue-600">2. 主要商業功能</a></li>
+                        <li><a href="page3.html" class="block py-1.5 px-2 rounded hover:bg-blue-50 text-gray-600 hover:text-blue-600">3. 中小型企業</a></li>
+                    </ul>
+                </div>
+
+                <!-- B2/B3 -->
+                <div class="mb-4">
+                    <button class="w-full flex justify-between items-center text-left font-bold text-green-700 mb-2 group hover:text-green-800 transition focus:outline-none" onclick="toggleMenu('menu-b2', this)" aria-expanded="false">
+                        <span class="flex items-center"><i data-lucide="users" class="w-4 h-4 mr-2"></i>B2/B3 人力資源</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4 chevron-icon"></i>
+                    </button>
+                    <ul id="menu-b2" class="space-y-1 text-sm ml-2 border-l-2 border-gray-100 pl-2 hidden">
+                        <li><a href="page4.html" class="block py-1.5 px-2 rounded hover:bg-green-50 text-gray-600 hover:text-green-600">1. 人力規劃和員工編制</a></li>
+                        <li><a href="page5.html" class="block py-1.5 px-2 rounded hover:bg-green-50 text-gray-600 hover:text-green-600">2. 員工考績</a></li>
+                        <li><a href="page6.html" class="block py-1.5 px-2 rounded hover:bg-green-50 text-gray-600 hover:text-green-600">3. 報酬管理</a></li>
+                        <li><a href="page7.html" class="block py-1.5 px-2 rounded hover:bg-green-50 text-gray-600 hover:text-green-600">4. 培訓和發展</a></li>
+                        <li><a href="page8.html" class="block py-1.5 px-2 rounded hover:bg-green-50 text-gray-600 hover:text-green-600">5. 發展優質人力資源</a></li>
+                    </ul>
+                </div>
+
+                <!-- B4-B6 -->
+                <div class="mb-4">
+                    <button class="w-full flex justify-between items-center text-left font-bold text-purple-700 mb-2 group hover:text-purple-800 transition focus:outline-none" onclick="toggleMenu('menu-b4', this)" aria-expanded="false">
+                        <span class="flex items-center"><i data-lucide="shopping-bag" class="w-4 h-4 mr-2"></i>B4-B6 市場營銷</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4 chevron-icon"></i>
+                    </button>
+                    <ul id="menu-b4" class="space-y-1 text-sm ml-2 border-l-2 border-gray-100 pl-2 hidden">
+                        <li><a href="page8.html" class="block py-1.5 px-2 rounded hover:bg-purple-50 text-gray-600 hover:text-purple-600">1. 市場營銷的角色</a></li>
+                        <li><a href="page10.html" class="block py-1.5 px-2 rounded hover:bg-purple-50 text-gray-600 hover:text-purple-600">2. 市場研究</a></li>
+                        <li><a href="page11.html" class="block py-1.5 px-2 rounded hover:bg-purple-50 text-gray-600 hover:text-purple-600">3. 消費者行為</a></li>
+                        <li><a href="page12.html" class="block py-1.5 px-2 rounded hover:bg-purple-50 text-gray-600 hover:text-purple-600">4. 市場區隔與定位</a></li>
+                        <li><a href="page13.html" class="block py-1.5 px-2 rounded hover:bg-purple-50 text-gray-600 hover:text-purple-600">5. 市場營銷策略 (一)</a></li>
+                        <li><a href="page14.html" class="block py-1.5 px-2 rounded hover:bg-purple-50 text-gray-600 hover:text-purple-600">6. 市場營銷策略 (二)</a></li>
+                        <li><a href="page15.html" class="block py-1.5 px-2 rounded hover:bg-purple-50 text-gray-600 hover:text-purple-600">7. 顧客關係管理</a></li>
+                    </ul>
+                </div>
+
+                <!-- B7-B9 (Expanded by default) -->
+                <div class="mb-4">
+                    <button class="w-full flex justify-between items-center text-left font-bold text-red-700 mb-2 group hover:text-red-800 transition focus:outline-none" onclick="toggleMenu('menu-b7', this)" aria-expanded="true">
+                        <span class="flex items-center"><i data-lucide="bar-chart-3" class="w-4 h-4 mr-2"></i>B7-B9 財務管理</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4 chevron-icon"></i>
+                    </button>
+                    <ul id="menu-b7" class="space-y-1 text-sm ml-2 border-l-2 border-gray-100 pl-2">
+                        <li><a href="page16.html" class="block py-1.5 px-2 rounded hover:bg-red-50 text-red-600 hover:text-red-600">1. 財務分析</a></li>
+                        <li><a href="page17.html" class="block py-1.5 px-2 rounded hover:bg-red-50 text-red-600 hover:text-red-600">2. 預算編製</a></li>
+                        <li><a href="page18.html" class="block py-1.5 px-2 rounded hover:bg-red-50 text-red-600 hover:text-red-600">3. 融資方式</a></li>
+                        <li><a href="page19.html" class="block py-1.5 px-2 rounded hover:bg-red-50 text-red-600 hover:text-red-600">4. 資本投資評估</a></li>
+                        <li><a href="page20.html" class="block py-1.5 px-2 rounded bg-red-50 text-red-600 font-medium">5. 營運資金管理</a></li>
+                        <li><a href="page21.html" class="block py-1.5 px-2 rounded hover:bg-red-50 text-red-600 hover:text-red-600">6. 風險管理</a></li>
+                    </ul>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Overlay for mobile sidebar -->
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black opacity-50 z-30 hidden lg:hidden"></div>
+
+        <!-- Main Content -->
+        <main class="flex-grow overflow-y-auto h-full p-4 sm:p-8 bg-gray-50" id="content-area">
+            <div class="max-w-4xl mx-auto">
+                <!-- Header -->
+                <div class="mb-8 border-b pb-4">
+                    <div class="flex items-center text-sm text-gray-500 mb-2">
+                        <span>B7-B9 財務管理</span>
+                        <i data-lucide="chevron-right" class="w-4 h-4 mx-2"></i>
+                        <span class="text-red-600 font-medium">5. 營運資金管理</span>
+                    </div>
+                    <h1 class="text-3xl font-extrabold text-gray-900">營運資金管理</h1>
+                    <p class="text-gray-600 mt-2 recite-target">解釋現金、應收帳款、應付帳款及存貨管理的重要性與策略。</p>
+                </div>
+
+                <!-- Intro Alert -->
+                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-8">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i data-lucide="trending-up" class="h-5 w-5 text-yellow-500"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-yellow-700">
+                                <span class="font-bold">Trend_DSE 筆記：</span>
+                                根據趨勢分析，本章在 DSE 中發問頻率極高的重點包括：「顧客關係管理在市場營銷過程中的重要性（7.3）」「有助提升顧客忠誠度的市場營銷策略（7.5）」。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 1. 營運資金管理 -->
+                <section class="mb-10">
+                    <h2 class="text-xl font-bold text-red-800 mb-4 flex items-center">
+                        <span class="w-8 h-8 bg-red-100 text-red-600 rounded-lg flex items-center justify-center mr-3 text-sm">一</span>
+                        營運資金管理 (5.2)
+                    </h2>
+                    
+                    <div class="section-card">
+                        <div class="bg-red-50 p-4 rounded-lg border border-red-100 mb-6">
+                            <p class="mb-2"><span class="font-bold text-red-800">• 定義：</span><span class="recite-target text-gray-700">指同時管理企業的流動資產和流動負債，讓企業有充足的短期變現能力，應付其日常營運。</span></p>
+                            <p><span class="font-bold text-red-800">• 重要性：</span><span class="recite-target text-gray-700">營運資金管理有助企業維持變現能力。即使企業賺取豐厚的利潤，如果它不能從營運中取得足夠的現金償還短期債務，仍然有倒閉的危機。</span></p>
+                        </div>
+
+                        <h4 class="font-bold text-gray-800 mb-3 border-l-4 border-red-500 pl-3 flex items-center">
+                            營業循環和現金轉換循環 <span class="important-tag ml-2">重點</span> (5.2B)
+                        </h4>
+                        <p class="text-sm text-gray-600 mb-4">根據趨勢分析，此部分在 DSE 卷二中發問頻率極高。</p>
+
+                        <div class="space-y-4">
+                            <div class="bg-white border border-gray-200 p-3 rounded hover:shadow-sm">
+                                <span class="font-bold text-gray-800 block mb-1">營業循環</span>
+                                <span class="recite-target text-sm text-gray-600">是由企業賒購存貨，到售出產品收取現金的期間。</span>
+                            </div>
+                            <div class="bg-white border border-gray-200 p-3 rounded hover:shadow-sm">
+                                <span class="font-bold text-gray-800 block mb-1">現金轉換循環</span>
+                                <span class="recite-target text-sm text-gray-600">是由企業以現金支付購買存貨，到售出產品收取現金的期間。</span>
+                            </div>
+                            <div class="bg-red-50 p-3 rounded text-sm text-red-900 border border-red-100">
+                                <span class="font-bold">管理效率：</span><span class="recite-target">企業的營業循環或現金轉換循環越短，代表它管理營運資金的效率越高。</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 2. 現金管理 -->
+                <section class="mb-10">
+                    <h2 class="text-xl font-bold text-red-800 mb-4 flex items-center">
+                        <span class="w-8 h-8 bg-red-100 text-red-600 rounded-lg flex items-center justify-center mr-3 text-sm">二</span>
+                        現金管理 (5.3)
+                    </h2>
+
+                    <div class="section-card">
+                        <div class="mb-6">
+                            <h4 class="font-bold text-gray-800 mb-2">基本目的</h4>
+                            <p class="recite-target text-sm text-gray-600">以最低的成本維持充足的現金，以確保業務能暢順運作。這涉及在持有現金的成本（放棄的利息收入）和好處（減低現金短缺風險）之間取得平衡。</p>
+                        </div>
+
+                        <div class="mb-6">
+                            <h4 class="font-bold text-gray-800 mb-2">現金管理的基本原則</h4>
+                            <ul class="list-decimal list-inside text-sm text-gray-700 space-y-1">
+                                <li class="recite-target">加快現金流入：如縮短支票收帳延後的時間或鼓勵現金付款。</li>
+                                <li class="recite-target">延遲現金流出：如延長支票支付延後的時間或延遲支付應付帳款。</li>
+                                <li class="recite-target">配合現金流入和現金流出的時間和金額。</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-gray-50 p-4 rounded border border-gray-200">
+                            <h4 class="font-bold text-red-800 mb-2 text-sm">編製現金預算 (5.3D)</h4>
+                            <div class="space-y-2 text-sm">
+                                <p><span class="font-bold text-gray-800">• 角色：</span><span class="recite-target text-gray-600">現金預算預測企業未來的現金流入、現金流出和現金餘額。</span></p>
+                                <p><span class="font-bold text-gray-800">• 重要性：</span><span class="recite-target text-gray-600">有助企業預測未來可能出現的現金盈餘（可投資於有價證券）或現金短缺（可預先計劃融資），從而及早採取行動。</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 3. 應收帳款管理 -->
+                <section class="mb-10">
+                    <h2 class="text-xl font-bold text-red-800 mb-4 flex items-center">
+                        <span class="w-8 h-8 bg-red-100 text-red-600 rounded-lg flex items-center justify-center mr-3 text-sm">三</span>
+                        應收帳款管理 <span class="important-tag"><i data-lucide="star" class="w-3 h-3 mr-1"></i>重點</span> (5.4)
+                    </h2>
+                    
+                    <div class="section-card">
+                        <p class="text-sm text-gray-500 mb-4">應收帳款政策及其影響因素是 DSE 的核心考點。</p>
+
+                        <!-- Policy Elements -->
+                        <div class="mb-8">
+                            <h4 class="font-bold text-gray-800 mb-3 border-l-4 border-red-500 pl-3">1. 應收帳款政策元素 (5.4A)</h4>
+                            <div class="grid md:grid-cols-3 gap-3">
+                                <div class="bg-white border border-gray-200 p-3 rounded">
+                                    <span class="font-bold text-red-700 block text-sm mb-1">信用標準</span>
+                                    <span class="recite-target text-xs text-gray-600">顧客要從企業獲得賒帳，須具備的最低信貸可靠性。</span>
+                                </div>
+                                <div class="bg-white border border-gray-200 p-3 rounded">
+                                    <span class="font-bold text-red-700 block text-sm mb-1">賒帳條款</span>
+                                    <span class="recite-target text-xs text-gray-600">列明賒購貨品的還款條款，包括信用期限、現金折扣及現金折扣期限。</span>
+                                </div>
+                                <div class="bg-white border border-gray-200 p-3 rounded">
+                                    <span class="font-bold text-red-700 block text-sm mb-1">收帳政策</span>
+                                    <span class="recite-target text-xs text-gray-600">列出一旦顧客逾期還款，企業應採取哪些行動來催收帳款，以免變成壞帳。</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 5C Analysis -->
+                        <div class="mb-8">
+                            <h4 class="font-bold text-gray-800 mb-3 border-l-4 border-red-500 pl-3 flex items-center">
+                                2. 信用分析中的 5C <span class="important-tag ml-2">重點</span> (5.4A)
+                            </h4>
+                            <p class="text-sm text-gray-600 mb-3">放債人審批信貸時考慮的五個主要因素：</p>
+                            <div class="grid grid-cols-1 md:grid-cols-5 gap-2">
+                                <div class="bg-red-50 p-2 rounded border border-red-100 text-center">
+                                    <span class="font-bold text-red-800 block text-sm">資金 (Capital)</span>
+                                    <span class="recite-target text-xs text-gray-600 block mt-1">指企業東主投資於企業的資金金額。</span>
+                                </div>
+                                <div class="bg-red-50 p-2 rounded border border-red-100 text-center">
+                                    <span class="font-bold text-red-800 block text-sm">能力 (Capacity)</span>
+                                    <span class="recite-target text-xs text-gray-600 block mt-1">指企業償還貸款的能力。</span>
+                                </div>
+                                <div class="bg-red-50 p-2 rounded border border-red-100 text-center">
+                                    <span class="font-bold text-red-800 block text-sm">抵押品 (Collateral)</span>
+                                    <span class="recite-target text-xs text-gray-600 block mt-1">指企業提供作為貸款保障的抵押品。</span>
+                                </div>
+                                <div class="bg-red-50 p-2 rounded border border-red-100 text-center">
+                                    <span class="font-bold text-red-800 block text-sm">狀況 (Conditions)</span>
+                                    <span class="recite-target text-xs text-gray-600 block mt-1">指企業所處的整體經濟環境、行業前景，以及貸款的預期用途。</span>
+                                </div>
+                                <div class="bg-red-50 p-2 rounded border border-red-100 text-center">
+                                    <span class="font-bold text-red-800 block text-sm">品格 (Character)</span>
+                                    <span class="recite-target text-xs text-gray-600 block mt-1">貸款人對企業信貸可靠性的主觀判斷。</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Factors Affecting Policy -->
+                        <div>
+                            <h4 class="font-bold text-gray-800 mb-3 border-l-4 border-red-500 pl-3 flex items-center">
+                                3. 影響制定應收帳款政策的因素 <span class="important-tag ml-2">重點</span> (5.4B)
+                            </h4>
+                            <p class="text-sm text-gray-600 mb-3">企業須在以下三個因素之間取得平衡：</p>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <div class="bg-white border border-gray-200 p-3 rounded hover:shadow-sm">
+                                    <span class="font-bold text-gray-800 block text-sm mb-1">變現能力</span>
+                                    <span class="recite-target text-xs text-gray-600">提高信用標準或縮短信用期限可改善變現能力。</span>
+                                </div>
+                                <div class="bg-white border border-gray-200 p-3 rounded hover:shadow-sm">
+                                    <span class="font-bold text-gray-800 block text-sm mb-1">銷售額</span>
+                                    <span class="recite-target text-xs text-gray-600">放寬應收帳款政策（如降低信用標準、增加現金折扣）可增加銷售額。</span>
+                                </div>
+                                <div class="bg-white border border-gray-200 p-3 rounded hover:shadow-sm">
+                                    <span class="font-bold text-gray-800 block text-sm mb-1">壞帳</span>
+                                    <span class="recite-target text-xs text-gray-600">收緊信用標準或收帳政策可減少壞帳風險。</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 4. 應付帳款管理 -->
+                <section class="mb-10">
+                    <h2 class="text-xl font-bold text-red-800 mb-4 flex items-center">
+                        <span class="w-8 h-8 bg-red-100 text-red-600 rounded-lg flex items-center justify-center mr-3 text-sm">四</span>
+                        應付帳款管理 (5.5)
+                    </h2>
+                    
+                    <div class="section-card">
+                        <p class="mb-3 text-sm text-gray-700 note-text"><span class="font-bold text-red-800">• 決策關鍵：</span><span class="recite-target">在「獲取現金折扣」與「放棄現金折扣以持有更多現金」之間作出選擇。</span></p>
+                        <div class="bg-red-50 p-4 rounded border border-red-100">
+                            <span class="font-bold text-red-800 block mb-2 text-sm">決策規則：</span>
+                            <ul class="list-disc list-inside text-sm text-gray-700 space-y-1">
+                                <li><span class="recite-target">若現金折扣的年率 > 貸款利率：應向銀行借款，獲取現金折扣。</span></li>
+                                <li><span class="recite-target">若現金折扣的年率 < 貸款利率：應放棄現金折扣。</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 5. 存貨管理 -->
+                <section class="mb-10">
+                    <h2 class="text-xl font-bold text-red-800 mb-4 flex items-center">
+                        <span class="w-8 h-8 bg-red-100 text-red-600 rounded-lg flex items-center justify-center mr-3 text-sm">五</span>
+                        存貨管理 <span class="important-tag"><i data-lucide="star" class="w-3 h-3 mr-1"></i>重點</span> (5.6)
+                    </h2>
+                    
+                    <div class="section-card">
+                        <p class="text-sm text-gray-500 mb-3 bg-yellow-50 p-2 rounded">存貨管理的目的與 EOQ 模型是極高頻的發問重點。</p>
+                        <p class="mb-4 text-sm text-gray-700 note-text"><span class="font-bold text-red-800">• 目的：</span><span class="recite-target">保持充足的存貨（避免缺貨）以及將與存貨相關的成本降至最低。</span></p>
+
+                        <!-- EOQ -->
+                        <div class="mb-6">
+                            <h4 class="font-bold text-gray-800 mb-3 border-l-4 border-red-500 pl-3 flex items-center">
+                                1. 經濟訂貨量 (EOQ) <span class="important-tag ml-2">重點</span> (5.6B)
+                            </h4>
+                            <div class="bg-gray-50 p-3 rounded border border-gray-200 mb-3">
+                                <span class="font-bold text-gray-800 text-sm block mb-1">定義：</span>
+                                <span class="recite-target text-sm text-gray-600">總存貨成本在最低水平時的訂貨量。在此水平，總訂購成本等於總貯存成本。</span>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="bg-white border border-gray-200 p-3 rounded">
+                                    <span class="font-bold text-red-700 block text-sm mb-1">1. 訂購成本</span>
+                                    <span class="recite-target text-xs text-gray-600">向供應商訂貨和取貨所涉及的成本（與訂貨量成反比）。</span>
+                                </div>
+                                <div class="bg-white border border-gray-200 p-3 rounded">
+                                    <span class="font-bold text-red-700 block text-sm mb-1">2. 貯存成本</span>
+                                    <span class="recite-target text-xs text-gray-600">持有存貨一段時間所涉及的成本（與訂貨量成正比）。</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Reorder Level -->
+                        <div>
+                            <h4 class="font-bold text-gray-800 mb-3 border-l-4 border-red-500 pl-3 flex items-center">
+                                2. 再訂購水平 <span class="important-tag ml-2">重點</span> (5.6C)
+                            </h4>
+                            <div class="bg-gray-50 p-3 rounded border border-gray-200 mb-3">
+                                <span class="font-bold text-gray-800 text-sm block mb-1">定義：</span>
+                                <span class="recite-target text-sm text-gray-600">企業須補充存貨的存貨水平。</span>
+                            </div>
+                            <div class="mb-3">
+                                <span class="font-bold text-gray-800 text-sm block mb-2">影響因素：</span>
+                                <ul class="list-decimal list-inside text-sm text-gray-600 space-y-1">
+                                    <li><span class="recite-target">訂貨間隔期：下訂單至交貨所需的時間。</span></li>
+                                    <li><span class="recite-target">每日的存貨耗用量或銷量。</span></li>
+                                    <li><span class="recite-target">安全存貨水平：用於應付突發情況的最低存貨水平。</span></li>
+                                </ul>
+                            </div>
+                            <div class="bg-red-100 p-3 rounded border border-red-200 text-center">
+                                <span class="font-bold text-red-900 text-sm">計算公式：</span>
+                                <span class="recite-target text-red-800 font-mono text-sm block mt-1">再訂購水平 = (每日耗用量 × 訂貨間隔期) + 安全存貨。</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Analogy Section -->
+                <section class="mb-10">
+                    <div class="bg-gradient-to-r from-red-50 to-orange-50 border border-red-100 rounded-lg p-5 shadow-sm">
+                        <h2 class="text-lg font-bold text-red-900 mb-3 flex items-center">
+                            <span class="text-xl mr-2">💡</span> 類比理解： 「營運資金管理」「經營一家小麵攤」
+                        </h2>
+                        <ul class="space-y-3 text-sm text-red-800">
+                            <li class="flex items-start">
+                                <span class="font-bold mr-2 text-red-600 flex-shrink-0">• 營業循環（重點）：</span>
+                                <span class="recite-target">是從你買進麵條（賒購），到客人吃完麵付錢（收取現金）的總時間。</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="font-bold mr-2 text-red-600 flex-shrink-0">• 現金預算：</span>
+                                <span class="recite-target">是預測下個月生意好壞，看看口袋裡的錢夠不夠付瓦斯費（現金支出）或需不需要去借錢（現金短缺）。</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="font-bold mr-2 text-red-600 flex-shrink-0">• 5C 分析（重點）：</span>
+                                <span class="recite-target">是銀行看你這家麵攤值不值得借錢時，會看你有沒有存款（資金）、生意好不好（能力）以及你的為人（品格）。</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="font-bold mr-2 text-red-600 flex-shrink-0">• 再訂購水平（重點）：</span>
+                                <span class="recite-target">是當麵條剩下最後三把時（存貨水平下降），你就必須打電話叫貨，以防貨送到前（訂貨間隔期）客人沒麵吃。</span>
+                            </li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Navigation Buttons -->
+                <div class="flex justify-between mt-8 mb-12">
+                    <a href="page19.html" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium flex items-center transition">
+                        <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i> 上一課題：資本投資評估
+                    </a>
+                    <a href="page21.html" class="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium flex items-center shadow-lg transition transform hover:-translate-y-0.5">
+                        下一課題：風險管理 <i data-lucide="arrow-right" class="w-4 h-4 ml-2"></i>
+                    </a>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        // Mobile Sidebar Toggle Logic
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+
+        mobileMenuBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('hidden');
+            sidebar.classList.toggle('-translate-x-full');
+            if (!sidebar.classList.contains('hidden')) {
+                overlay.classList.remove('hidden');
+            } else {
+                overlay.classList.add('hidden');
+            }
+        });
+
+        overlay.addEventListener('click', () => {
+            sidebar.classList.add('hidden');
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('hidden');
+        });
+
+        // Sidebar Accordion Logic
+        function toggleMenu(menuId, btn) {
+            const menu = document.getElementById(menuId);
+            const isExpanded = btn.getAttribute('aria-expanded') === 'true';
+            
+            // Toggle current menu
+            if (isExpanded) {
+                menu.classList.add('hidden');
+                btn.setAttribute('aria-expanded', 'false');
+            } else {
+                menu.classList.remove('hidden');
+                btn.setAttribute('aria-expanded', 'true');
+            }
+        }
+
+        // PDF Download Logic
+        function downloadPDF() {
+            const content = document.querySelector('.max-w-4xl');
+            const clone = content.cloneNode(true);
+            
+            // Remove navigation buttons
+            const navButtons = clone.querySelector('.flex.justify-between.mt-8.mb-12');
+            if(navButtons) navButtons.remove();
+
+            // Remove blur effects
+            const blurredElements = clone.querySelectorAll('.recite-blur');
+            blurredElements.forEach(el => {
+                el.classList.remove('recite-blur');
+                el.style.color = 'inherit'; 
+                el.style.textShadow = 'none';
+                el.style.backgroundColor = 'transparent';
+            });
+
+            const opt = {
+                margin:       [10, 10, 10, 10],
+                filename:     'BAFS_Ch5_Working_Capital.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, logging: false, letterRendering: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+            };
+
+            html2pdf().set(opt).from(clone).save();
+        }
+
+        // Recite Mode Logic
+        const reciteToggle = document.getElementById('recite-toggle');
+        const contentArea = document.getElementById('content-area');
+        
+        reciteToggle.addEventListener('change', function() {
+            const targets = document.querySelectorAll('.recite-target');
+            
+            if (this.checked) {
+                targets.forEach(el => {
+                    el.classList.add('recite-blur');
+                    el.classList.remove('recite-revealed');
+                });
+            } else {
+                targets.forEach(el => {
+                    el.classList.remove('recite-blur');
+                    el.classList.remove('recite-revealed');
+                });
+            }
+        });
+
+        // Click to reveal logic
+        contentArea.addEventListener('click', function(e) {
+            let target = e.target;
+            if (target.closest('.recite-blur')) {
+                target.closest('.recite-blur').classList.toggle('recite-revealed');
+            }
+        });
+    </script>
+</body>
+</html>
