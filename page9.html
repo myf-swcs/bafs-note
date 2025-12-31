@@ -6,6 +6,8 @@
     <title>1. 市場營銷的角色 - BAFS 2026</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- PDF Generation Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -171,6 +173,12 @@
                     </a>
                 </div>
                 <div class="flex items-center space-x-4">
+                    <!-- PDF Download Button -->
+                    <button onclick="downloadPDF()" class="flex items-center text-gray-600 hover:text-red-600 font-medium text-sm bg-gray-100 hover:bg-red-50 px-3 py-1.5 rounded-full transition mr-2" title="下載筆記 PDF">
+                        <i data-lucide="file-down" class="w-4 h-4 mr-1"></i>
+                        <span class="hidden sm:inline">下載 PDF</span>
+                    </button>
+
                     <!-- Recite Mode Toggle -->
                     <div class="flex items-center mr-2">
                         <span class="text-sm font-medium text-gray-700 mr-2 hidden sm:block">背書模式</span>
@@ -510,8 +518,8 @@
 
                 <!-- Navigation Buttons -->
                 <div class="flex justify-between mt-8 mb-12">
-                    <a href="page7.html" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium flex items-center transition">
-                        <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i> 上一課題：培訓和發展
+                    <a href="page8.html" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium flex items-center transition">
+                        <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i> 上一課題：發展優質人力資源
                     </a>
                     <a href="page10.html" class="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium flex items-center shadow-lg transition transform hover:-translate-y-0.5">
                         下一課題：市場研究 <i data-lucide="arrow-right" class="w-4 h-4 ml-2"></i>
@@ -561,6 +569,36 @@
             }
         }
 
+        // PDF Download Logic
+        function downloadPDF() {
+            const content = document.querySelector('.max-w-4xl');
+            const clone = content.cloneNode(true);
+            
+            // Remove navigation buttons from the clone
+            const navButtons = clone.querySelector('.flex.justify-between.mt-8.mb-12');
+            if(navButtons) navButtons.remove();
+
+            // Remove blur effects
+            const blurredElements = clone.querySelectorAll('.recite-blur');
+            blurredElements.forEach(el => {
+                el.classList.remove('recite-blur');
+                el.style.color = 'inherit'; 
+                el.style.textShadow = 'none';
+                el.style.backgroundColor = 'transparent';
+            });
+
+            const opt = {
+                margin:       [10, 10, 10, 10],
+                filename:     'BAFS_Ch1_Marketing_Role.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, logging: false, letterRendering: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+            };
+
+            html2pdf().set(opt).from(clone).save();
+        }
+
         // Recite Mode Logic
         const reciteToggle = document.getElementById('recite-toggle');
         const contentArea = document.getElementById('content-area');
@@ -584,7 +622,6 @@
         // Click to reveal logic
         contentArea.addEventListener('click', function(e) {
             let target = e.target;
-            // Handle if clicking on child element within blur target
             if (target.closest('.recite-blur')) {
                 target.closest('.recite-blur').classList.toggle('recite-revealed');
             }
