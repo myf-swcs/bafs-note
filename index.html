@@ -340,12 +340,43 @@
             <footer class="mt-12 text-center text-gray-500 text-sm pb-8 border-t pt-8">
                 <p class="mb-2">加油！每一分的努力都會在 2026 年兌現。</p>
                 <p class="mb-4">&copy; 2026 HKDSE BAFS Countdown Tool</p>
-                <div class="inline-flex items-center bg-gray-100 px-3 py-1 rounded-full text-xs font-medium text-gray-600">
-                    <i data-lucide="users" class="w-3 h-3 mr-1.5"></i>
-                    累積瀏覽人次：<span id="visitor-count" class="ml-1 font-bold text-blue-600">...</span>
+                <div class="flex flex-col items-center gap-2">
+                    <div class="inline-flex items-center bg-gray-100 px-3 py-1 rounded-full text-xs font-medium text-gray-600">
+                        <i data-lucide="users" class="w-3 h-3 mr-1.5"></i>
+                        累積瀏覽人次：<span id="visitor-count" class="ml-1 font-bold text-blue-600">...</span>
+                    </div>
+                    <button onclick="openLegalModal()" class="text-gray-400 hover:text-gray-600 text-xs underline mt-2">免責聲明與版權告示</button>
                 </div>
             </footer>
         </main>
+    </div>
+
+    <!-- Legal Modal -->
+    <div id="legalModal" class="modal fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeLegalModal()"></div>
+        <!-- Content -->
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-6 overflow-y-auto max-h-[90vh]">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-800">免責聲明與版權告示</h3>
+                <button onclick="closeLegalModal()" class="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-200 transition"><i data-lucide="x" class="w-6 h-6"></i></button>
+            </div>
+            <div class="space-y-4 text-sm text-gray-600">
+                <h4 class="font-bold text-gray-800 text-base">1. 免責聲明 (Disclaimer)</h4>
+                <p>本網站（HKDSE BAFS 2026 倒數工具）所載的所有資料、筆記及分析僅供學術交流及教育參考用途。儘管我們已盡力確保內容的準確性，但本網站不保證所有資訊均完全無誤或為最新版本。使用者在引用或依賴本網站資料前，應自行核實（如參考官方課本或考評局文件）。本網站不會對任何因使用或依賴本網站資料而引致的損失或損害承擔任何責任。</p>
+                
+                <h4 class="font-bold text-gray-800 text-base">2. 版權告示 (Copyright Notice)</h4>
+                <p>本網站內的筆記內容乃依據香港中學文憑考試 (HKDSE) 企業、會計與財務概論 (BAFS) 科目之課程綱要編寫及整理。</p>
+                <ul class="list-disc list-inside ml-2 space-y-1">
+                    <li><strong>試題引用：</strong>有關歷屆試題的趨勢分析，純屬對香港考試及評核局 (HKEAA) 公開資料之學術討論與衍生分析，本網站並不擁有原試題之版權。</li>
+                    <li><strong>原創整理：</strong>網站內的筆記架構、總結及圖表設計均為原創整理。</li>
+                    <li><strong>非商業用途：</strong>本網站內容僅供個人學習使用，未經授權，嚴禁用於任何商業用途或進行未經許可的轉載。</li>
+                </ul>
+            </div>
+            <div class="mt-6 text-right pt-4 border-t border-gray-100">
+                <button onclick="closeLegalModal()" class="px-5 py-2.5 bg-gray-800 hover:bg-gray-900 rounded-lg text-white font-medium transition shadow-sm">關閉</button>
+            </div>
+        </div>
     </div>
 
     <!-- Download Center Modal -->
@@ -407,18 +438,23 @@
         // Visitor Counter Logic
         async function initVisitorCounter() {
             try {
+                // 1. Authenticate anonymously
                 await signInAnonymously(auth);
+                
                 const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'site_stats', 'visitors');
 
+                // 2. Increment count only once per session
                 if (!sessionStorage.getItem('visited')) {
                     try {
                         await updateDoc(docRef, { count: increment(1) });
                     } catch (error) {
+                        // If document doesn't exist yet, create it
                         await setDoc(docRef, { count: 1 });
                     }
                     sessionStorage.setItem('visited', 'true');
                 }
 
+                // 3. Listen for real-time updates
                 onSnapshot(docRef, (docSnap) => {
                     if (docSnap.exists()) {
                         const count = docSnap.data().count;
@@ -427,11 +463,13 @@
                         document.getElementById('visitor-count').innerText = "0";
                     }
                 });
+
             } catch (error) {
                 console.error("Error initializing visitor counter:", error);
                 document.getElementById('visitor-count').innerText = "N/A";
             }
         }
+
         initVisitorCounter();
     </script>
 
@@ -500,6 +538,7 @@
             }
         });
 
+        // Hide search results when clicking outside
         document.addEventListener('click', function(e) {
             if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
                 searchResults.classList.add('hidden');
@@ -567,6 +606,19 @@
         updateCountdown();
         setInterval(updateCountdown, 1000);
 
+        // --- Legal Modal Logic ---
+        window.openLegalModal = function() {
+            const modal = document.getElementById('legalModal');
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.classList.add('active'), 10);
+        }
+        
+        window.closeLegalModal = function() {
+            const modal = document.getElementById('legalModal');
+            modal.classList.remove('active');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
         // --- Download Center Logic ---
         
         const modal = document.getElementById('downloadModal');
@@ -576,12 +628,14 @@
         let selectedTitle = null;
 
         window.openDownloadModal = function() {
-            modal.classList.add('active');
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.classList.add('active'), 10);
             renderTopics();
         }
 
         window.closeDownloadModal = function() {
             modal.classList.remove('active');
+            setTimeout(() => modal.classList.add('hidden'), 300);
             selectedUrl = null;
             confirmBtn.disabled = true;
             document.getElementById('downloadBtnText').innerText = "確認下載 PDF";
