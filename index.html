@@ -748,6 +748,14 @@
                         const doc = parser.parseFromString(text, 'text/html');
                         const content = doc.querySelector('.max-w-4xl');
 
+                        // *** NEW: Extract and append styles from the fetched page ***
+                        const styleTags = doc.querySelectorAll('style');
+                        if (styleTags.length > 0) {
+                            const stylesContainer = document.createElement('div');
+                            styleTags.forEach(tag => stylesContainer.appendChild(tag.cloneNode(true)));
+                            staging.appendChild(stylesContainer);
+                        }
+
                         if (content) {
                             const clone = content.cloneNode(true);
                             
