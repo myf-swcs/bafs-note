@@ -397,7 +397,7 @@
             
             <div class="p-6 overflow-y-auto flex-grow" id="topicList">
                 <div class="flex justify-between items-center mb-4">
-                    <p class="text-sm text-gray-500">請選擇您要下載的課題筆記。系統將自動生成高解析度 PDF。</p>
+                    <p class="text-sm text-gray-500">請選擇您要下載的課題筆記（可多選）。系統將自動生成高解析度 PDF。</p>
                     <button onclick="toggleAllTopics(this)" class="text-xs text-blue-600 hover:text-blue-700 font-medium hover:underline" data-action="select">全選</button>
                 </div>
                 
@@ -647,6 +647,7 @@
         }
 
         function renderTopics() {
+            // Group by Category
             const groups = {};
             searchData.forEach(item => {
                 if (!groups[item.category]) groups[item.category] = [];
@@ -730,51 +731,64 @@
                 const staging = document.getElementById('pdf-staging-area');
                 staging.innerHTML = ''; 
 
+                // Create a container to hold all pages content
                 const container = document.createElement('div');
 
                 for (let i = 0; i < selectedTopics.length; i++) {
                     const topic = selectedTopics[i];
                     
-                    const response = await fetch(topic.url);
-                    const text = await response.text();
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(text, 'text/html');
-                    const content = doc.querySelector('.max-w-4xl');
-
-                    if (content) {
-                        const clone = content.cloneNode(true);
-                        
-                        const navButtons = clone.querySelector('.flex.justify-between.mt-8.mb-12');
-                        if (navButtons) navButtons.remove();
-                        
-                        const blurred = clone.querySelectorAll('.recite-blur');
-                        blurred.forEach(el => {
-                            el.classList.remove('recite-blur');
-                            el.style.color = 'inherit';
-                            el.style.textShadow = 'none';
-                            el.style.backgroundColor = 'transparent';
-                        });
-
-                        // Add Title Separator if needed, or rely on page structure
-                        if (i > 0) {
-                            const separator = document.createElement('div');
-                            separator.style.height = '50px'; 
-                            separator.style.pageBreakBefore = 'always';
-                            container.appendChild(separator);
+                    try {
+                        const response = await fetch(topic.url);
+                        if (!response.ok) {
+                            console.warn(`File not found: ${topic.url}`);
+                            continue; // Skip if file doesn't exist
                         }
+                        const text = await response.text();
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(text, 'text/html');
+                        const content = doc.querySelector('.max-w-4xl');
 
-                        container.appendChild(clone);
-                        
-                        // Force page break after each topic except the last
-                        if (i < selectedTopics.length - 1) {
-                            const breakDiv = document.createElement('div');
-                            // html2pdf respects this class for page breaks
-                            breakDiv.className = 'html2pdf__page-break'; 
-                            container.appendChild(breakDiv);
+                        if (content) {
+                            const clone = content.cloneNode(true);
+                            
+                            // Clean up navigation and blurring
+                            const navButtons = clone.querySelector('.flex.justify-between.mt-8.mb-12');
+                            if (navButtons) navButtons.remove();
+                            
+                            const blurred = clone.querySelectorAll('.recite-blur');
+                            blurred.forEach(el => {
+                                el.classList.remove('recite-blur');
+                                el.style.color = 'inherit';
+                                el.style.textShadow = 'none';
+                                el.style.backgroundColor = 'transparent';
+                            });
+
+                            // Add separator space before subsequent pages
+                            if (i > 0) {
+                                const separator = document.createElement('div');
+                                separator.style.height = '50px'; 
+                                separator.style.pageBreakBefore = 'always';
+                                container.appendChild(separator);
+                            }
+
+                            container.appendChild(clone);
+                            
+                            // Add a page break after each topic except the last one
+                            if (i < selectedTopics.length - 1) {
+                                const breakDiv = document.createElement('div');
+                                breakDiv.className = 'html2pdf__page-break'; 
+                                container.appendChild(breakDiv);
+                            }
                         }
+                    } catch (err) {
+                        console.error(`Error loading ${topic.url}:`, err);
                     }
                 }
                 
+                if (container.children.length === 0) {
+                    throw new Error("沒有可下載的內容");
+                }
+
                 staging.appendChild(container);
                 lucide.createIcons({ root: staging });
 
