@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BAFS</title>
+    <title>BAFS 2026 DSE 倒數計時 & 課題搜尋</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- PDF Generation Library -->
@@ -76,7 +76,7 @@
                         <i data-lucide="menu" class="h-6 w-6"></i>
                     </button>
                     <i data-lucide="book-open" class="h-8 w-8 text-blue-600 mr-2"></i>
-                    <span class="font-bold text-xl tracking-tight text-gray-900 hidden sm:block">BAFS</span>
+                    <span class="font-bold text-xl tracking-tight text-gray-900 hidden sm:block">HKDSE BAFS 2026</span>
                     <span class="font-bold text-xl tracking-tight text-gray-900 sm:hidden">BAFS</span>
                 </div>
 
@@ -173,7 +173,7 @@
                         <li><a href="page18.html" class="block py-1.5 px-2 rounded hover:bg-red-50 text-gray-600 hover:text-red-600">3. 融資方式</a></li>
                         <li><a href="page19.html" class="block py-1.5 px-2 rounded hover:bg-red-50 text-gray-600 hover:text-red-600">4. 資本投資評估</a></li>
                         <li><a href="page20.html" class="block py-1.5 px-2 rounded hover:bg-red-50 text-gray-600 hover:text-red-600">5. 營運資金管理</a></li>
-                        <li><a href="page21.html" class="block py-1.5 px-2 rounded hover:bg-red-50 text-gray-600 hover:text-red-600">6. 風險管理</a></li>
+                        <li><a href="page21.html" class="block py-1.5 px-2 rounded bg-red-50 text-red-600 font-medium">6. 風險管理</a></li>
                     </ul>
                 </div>
             </div>
@@ -363,7 +363,7 @@
             </div>
             <div class="space-y-4 text-sm text-gray-600">
                 <h4 class="font-bold text-gray-800 text-base">1. 免責聲明 (Disclaimer)</h4>
-                <p>本網站（BAFS 倒數工具）所載的所有資料、筆記及分析僅供學術交流及教育參考用途。儘管我們已盡力確保內容的準確性，但本網站不保證所有資訊均完全無誤或為最新版本。使用者在引用或依賴本網站資料前，應自行核實（如參考官方課本或考評局文件）。本網站不會對任何因使用或依賴本網站資料而引致的損失或損害承擔任何責任。</p>
+                <p>本網站（HKDSE BAFS 2026 倒數工具）所載的所有資料、筆記及分析僅供學術交流及教育參考用途。儘管我們已盡力確保內容的準確性，但本網站不保證所有資訊均完全無誤或為最新版本。使用者在引用或依賴本網站資料前，應自行核實（如參考官方課本或考評局文件）。本網站不會對任何因使用或依賴本網站資料而引致的損失或損害承擔任何責任。</p>
                 
                 <h4 class="font-bold text-gray-800 text-base">2. 版權告示 (Copyright Notice)</h4>
                 <p>本網站內的筆記內容乃依據香港中學文憑考試 (HKDSE) 企業、會計與財務概論 (BAFS) 科目之課程綱要編寫及整理。</p>
@@ -396,7 +396,10 @@
             </div>
             
             <div class="p-6 overflow-y-auto flex-grow" id="topicList">
-                <p class="text-sm text-gray-500 mb-4">請選擇您要下載的課題筆記。系統將自動生成高解析度 PDF。</p>
+                <div class="flex justify-between items-center mb-4">
+                    <p class="text-sm text-gray-500">請選擇您要下載的課題筆記。系統將自動生成高解析度 PDF。</p>
+                    <button onclick="toggleAllTopics(this)" class="text-xs text-blue-600 hover:text-blue-700 font-medium hover:underline" data-action="select">全選</button>
+                </div>
                 
                 <!-- Topic List will be injected here -->
                 <div class="space-y-2" id="downloadTopicsContainer">
@@ -624,25 +627,26 @@
         const modal = document.getElementById('downloadModal');
         const topicsContainer = document.getElementById('downloadTopicsContainer');
         const confirmBtn = document.getElementById('confirmDownloadBtn');
-        let selectedUrl = null;
-        let selectedTitle = null;
+        let selectedTopics = []; 
 
         window.openDownloadModal = function() {
             modal.classList.remove('hidden');
             setTimeout(() => modal.classList.add('active'), 10);
+            selectedTopics = [];
+            confirmBtn.disabled = true;
+            document.getElementById('downloadBtnText').innerText = "確認下載 PDF";
             renderTopics();
         }
 
         window.closeDownloadModal = function() {
             modal.classList.remove('active');
             setTimeout(() => modal.classList.add('hidden'), 300);
-            selectedUrl = null;
+            selectedTopics = [];
             confirmBtn.disabled = true;
             document.getElementById('downloadBtnText').innerText = "確認下載 PDF";
         }
 
         function renderTopics() {
-            // Group by Category
             const groups = {};
             searchData.forEach(item => {
                 if (!groups[item.category]) groups[item.category] = [];
@@ -659,7 +663,7 @@
                 items.forEach(item => {
                     html += `
                         <label class="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-blue-50 transition select-none group">
-                            <input type="radio" name="downloadTopic" value="${item.url}" data-title="${item.title}" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500" onchange="selectTopic(this)">
+                            <input type="checkbox" name="downloadTopic" value="${item.url}" data-title="${item.title}" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" onchange="toggleTopic(this)">
                             <span class="ml-3 text-sm font-medium text-gray-700 group-hover:text-blue-700">${item.title}</span>
                         </label>
                     `;
@@ -669,74 +673,136 @@
             topicsContainer.innerHTML = html;
         }
 
-        window.selectTopic = function(radio) {
-            selectedUrl = radio.value;
-            selectedTitle = radio.getAttribute('data-title');
-            confirmBtn.disabled = false;
+        window.toggleTopic = function(checkbox) {
+            const url = checkbox.value;
+            const title = checkbox.getAttribute('data-title');
+            
+            if (checkbox.checked) {
+                selectedTopics.push({url, title});
+            } else {
+                selectedTopics = selectedTopics.filter(t => t.url !== url);
+            }
+            
+            confirmBtn.disabled = selectedTopics.length === 0;
+            const count = selectedTopics.length;
+            const btnText = document.getElementById('downloadBtnText');
+            btnText.innerText = count > 0 ? `確認下載 (${count} 份)` : "確認下載 PDF";
+        }
+
+        window.toggleAllTopics = function(btn) {
+            const action = btn.getAttribute('data-action');
+            const checkboxes = document.querySelectorAll('input[name="downloadTopic"]');
+            
+            if (action === 'select') {
+                checkboxes.forEach(cb => {
+                    if (!cb.checked) {
+                        cb.checked = true;
+                        // Manually trigger logic
+                        const url = cb.value;
+                        const title = cb.getAttribute('data-title');
+                        selectedTopics.push({url, title});
+                    }
+                });
+                btn.innerText = "取消全選";
+                btn.setAttribute('data-action', 'deselect');
+            } else {
+                checkboxes.forEach(cb => cb.checked = false);
+                selectedTopics = [];
+                btn.innerText = "全選";
+                btn.setAttribute('data-action', 'select');
+            }
+            
+            confirmBtn.disabled = selectedTopics.length === 0;
+            const count = selectedTopics.length;
+            const btnText = document.getElementById('downloadBtnText');
+            btnText.innerText = count > 0 ? `確認下載 (${count} 份)` : "確認下載 PDF";
         }
 
         window.processDownload = async function() {
-            if (!selectedUrl) return;
+            if (selectedTopics.length === 0) return;
 
             const btnText = document.getElementById('downloadBtnText');
-            btnText.innerText = "準備中...";
+            const originalText = btnText.innerText;
+            btnText.innerText = "準備中 (請稍候)...";
             confirmBtn.disabled = true;
 
             try {
-                // 1. Fetch content from the HTML file
-                const response = await fetch(selectedUrl);
-                const text = await response.text();
-
-                // 2. Parse HTML
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(text, 'text/html');
-                
-                // 3. Extract main content
-                const content = doc.querySelector('.max-w-4xl'); 
-                if (!content) throw new Error("無法讀取筆記內容");
-
-                // 4. Clone and Clean
-                const clone = content.cloneNode(true);
-                
-                // Remove Nav Buttons
-                const navButtons = clone.querySelector('.flex.justify-between.mt-8.mb-12');
-                if (navButtons) navButtons.remove();
-
-                // Remove Blur Effects
-                const blurred = clone.querySelectorAll('.recite-blur');
-                blurred.forEach(el => {
-                    el.classList.remove('recite-blur');
-                    el.style.color = 'inherit';
-                    el.style.textShadow = 'none';
-                    el.style.backgroundColor = 'transparent';
-                });
-
-                // 5. Append to staging area for generation
                 const staging = document.getElementById('pdf-staging-area');
-                staging.innerHTML = '';
-                staging.appendChild(clone);
-                // Ensure icons render
+                staging.innerHTML = ''; 
+
+                const container = document.createElement('div');
+
+                for (let i = 0; i < selectedTopics.length; i++) {
+                    const topic = selectedTopics[i];
+                    
+                    const response = await fetch(topic.url);
+                    const text = await response.text();
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(text, 'text/html');
+                    const content = doc.querySelector('.max-w-4xl');
+
+                    if (content) {
+                        const clone = content.cloneNode(true);
+                        
+                        const navButtons = clone.querySelector('.flex.justify-between.mt-8.mb-12');
+                        if (navButtons) navButtons.remove();
+                        
+                        const blurred = clone.querySelectorAll('.recite-blur');
+                        blurred.forEach(el => {
+                            el.classList.remove('recite-blur');
+                            el.style.color = 'inherit';
+                            el.style.textShadow = 'none';
+                            el.style.backgroundColor = 'transparent';
+                        });
+
+                        // Add Title Separator if needed, or rely on page structure
+                        if (i > 0) {
+                            const separator = document.createElement('div');
+                            separator.style.height = '50px'; 
+                            separator.style.pageBreakBefore = 'always';
+                            container.appendChild(separator);
+                        }
+
+                        container.appendChild(clone);
+                        
+                        // Force page break after each topic except the last
+                        if (i < selectedTopics.length - 1) {
+                            const breakDiv = document.createElement('div');
+                            // html2pdf respects this class for page breaks
+                            breakDiv.className = 'html2pdf__page-break'; 
+                            container.appendChild(breakDiv);
+                        }
+                    }
+                }
+                
+                staging.appendChild(container);
                 lucide.createIcons({ root: staging });
 
-                // 6. Generate PDF
+                let filename = 'BAFS_Notes.pdf';
+                if (selectedTopics.length === 1) {
+                    filename = `BAFS_${selectedTopics[0].title}.pdf`;
+                } else {
+                    filename = `BAFS_Notes_Combined.pdf`;
+                }
+
                 const opt = {
                     margin: [10, 10, 10, 10],
-                    filename: `BAFS_${selectedTitle}.pdf`,
+                    filename: filename,
                     image: { type: 'jpeg', quality: 0.98 },
                     html2canvas: { scale: 2, useCORS: true, letterRendering: true },
                     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
                 };
 
-                await html2pdf().set(opt).from(clone).save();
+                await html2pdf().set(opt).from(container).save();
 
                 btnText.innerText = "下載成功!";
                 setTimeout(closeDownloadModal, 1500);
 
             } catch (error) {
                 console.error(error);
-                btnText.innerText = "下載失敗，請重試";
+                btnText.innerText = "下載失敗";
                 setTimeout(() => {
-                    btnText.innerText = "確認下載 PDF";
+                    btnText.innerText = originalText;
                     confirmBtn.disabled = false;
                 }, 2000);
             }
@@ -744,4 +810,3 @@
     </script>
 </body>
 </html>
-
