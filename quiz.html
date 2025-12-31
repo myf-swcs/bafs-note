@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自我挑戰小測驗 - BAFS 2026</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #f0fdf4; /* Light green background */
+        }
+        .quiz-card {
+            transition: all 0.3s ease;
+        }
+        .option-btn {
+            transition: all 0.2s;
+        }
+        .option-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .option-btn.correct {
+            background-color: #d1fae5; /* Green-100 */
+            border-color: #10b981; /* Green-500 */
+            color: #065f46; /* Green-900 */
+        }
+        .option-btn.wrong {
+            background-color: #fee2e2; /* Red-100 */
+            border-color: #ef4444; /* Red-500 */
+            color: #991b1b; /* Red-900 */
+        }
+        .option-btn:disabled {
+            cursor: default;
+        }
+        
+        /* Progress Bar Animation */
+        .progress-fill {
+            transition: width 0.5s ease-out;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col text-gray-800">
+
+    <!-- Navbar -->
+    <nav class="bg-white shadow-sm sticky top-0 z-50 h-16 flex-none">
+        <div class="max-w-4xl mx-auto px-4 h-full flex justify-between items-center">
+            <div class="flex items-center">
+                <a href="index.html" class="flex items-center hover:opacity-80 transition text-gray-700">
+                    <i data-lucide="arrow-left" class="w-5 h-5 mr-2"></i>
+                    <span class="font-bold tracking-tight">返回首頁</span>
+                </a>
+            </div>
+            <div class="font-bold text-emerald-600 flex items-center">
+                <i data-lucide="brain-circuit" class="w-5 h-5 mr-2"></i>
+                BAFS 小測驗
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <main class="flex-grow flex flex-col items-center justify-center p-4">
+        
+        <div class="w-full max-w-2xl bg-white rounded-3xl shadow-xl overflow-hidden min-h-[500px] flex flex-col relative quiz-card border border-emerald-100">
+            
+            <!-- 1. Topic Selection Screen -->
+            <div id="screen-topics" class="p-8 flex flex-col h-full">
+                <div class="text-center mb-8">
+                    <h1 class="text-3xl font-extrabold text-gray-800 mb-2">請選擇測驗範疇</h1>
+                    <p class="text-gray-500">每次測驗約 5-10 題，助你快速溫習重點。</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow content-center">
+                    <button onclick="startQuiz('b1')" class="p-6 border-2 border-blue-100 bg-blue-50 hover:bg-blue-100 hover:border-blue-300 rounded-2xl transition text-left group">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="bg-blue-200 text-blue-700 text-xs font-bold px-2 py-1 rounded">B1</span>
+                            <i data-lucide="briefcase" class="w-5 h-5 text-blue-400 group-hover:text-blue-600"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-blue-800">管理導論</h3>
+                        <p class="text-sm text-blue-600/70 mt-1">管理功能、中小企...</p>
+                    </button>
+
+                    <button onclick="startQuiz('b2')" class="p-6 border-2 border-green-100 bg-green-50 hover:bg-green-100 hover:border-green-300 rounded-2xl transition text-left group">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="bg-green-200 text-green-700 text-xs font-bold px-2 py-1 rounded">B2/B3</span>
+                            <i data-lucide="users" class="w-5 h-5 text-green-400 group-hover:text-green-600"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-green-800">人力資源管理</h3>
+                        <p class="text-sm text-green-600/70 mt-1">激勵、考績、招聘...</p>
+                    </button>
+
+                    <button onclick="startQuiz('b4')" class="p-6 border-2 border-purple-100 bg-purple-50 hover:bg-purple-100 hover:border-purple-300 rounded-2xl transition text-left group">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="bg-purple-200 text-purple-700 text-xs font-bold px-2 py-1 rounded">B4-B6</span>
+                            <i data-lucide="shopping-bag" class="w-5 h-5 text-purple-400 group-hover:text-purple-600"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-purple-800">市場營銷</h3>
+                        <p class="text-sm text-purple-600/70 mt-1">4P、消費者行為...</p>
+                    </button>
+
+                    <button onclick="startQuiz('b7')" class="p-6 border-2 border-red-100 bg-red-50 hover:bg-red-100 hover:border-red-300 rounded-2xl transition text-left group">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="bg-red-200 text-red-700 text-xs font-bold px-2 py-1 rounded">B7-B9</span>
+                            <i data-lucide="bar-chart-3" class="w-5 h-5 text-red-400 group-hover:text-red-600"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-red-800">財務管理</h3>
+                        <p class="text-sm text-red-600/70 mt-1">比率分析、投資評估...</p>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 2. Quiz Interface (Hidden) -->
+            <div id="screen-quiz" class="hidden flex flex-col h-full">
+                <!-- Progress Bar -->
+                <div class="w-full bg-gray-100 h-2">
+                    <div id="progress-bar" class="bg-emerald-500 h-2 progress-fill" style="width: 0%"></div>
+                </div>
+
+                <div class="p-6 md:p-8 flex-grow flex flex-col">
+                    <!-- Top Bar -->
+                    <div class="flex justify-between items-center mb-6">
+                        <span id="quiz-topic-badge" class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-bold tracking-wide uppercase">TOPIC</span>
+                        <div class="text-sm font-medium text-gray-500">
+                            題目 <span id="current-q-num" class="text-gray-900 font-bold">1</span> / <span id="total-q-num">10</span>
+                        </div>
+                    </div>
+
+                    <!-- Question -->
+                    <h2 id="question-text" class="text-xl md:text-2xl font-bold text-gray-800 mb-8 leading-relaxed">
+                        題目載入中...
+                    </h2>
+
+                    <!-- Options -->
+                    <div id="options-container" class="space-y-3 flex-grow">
+                        <!-- Buttons injected by JS -->
+                    </div>
+
+                    <!-- Feedback Area (Hidden initially) -->
+                    <div id="feedback-container" class="hidden mt-6 p-4 bg-gray-50 border border-gray-200 rounded-xl animate-fade-in">
+                        <div class="flex items-start">
+                            <div id="feedback-icon" class="mt-1 mr-3 flex-shrink-0"></div>
+                            <div>
+                                <h4 id="feedback-title" class="font-bold text-lg mb-1"></h4>
+                                <p id="feedback-text" class="text-sm text-gray-600 leading-relaxed"></p>
+                            </div>
+                        </div>
+                        <button onclick="nextQuestion()" class="w-full mt-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg transition shadow-md">
+                            下一題 <i data-lucide="arrow-right" class="inline w-4 h-4 ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Result Screen (Hidden) -->
+            <div id="screen-result" class="hidden p-8 flex flex-col items-center justify-center h-full text-center">
+                <div class="w-24 h-24 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center mb-6 shadow-sm">
+                    <i data-lucide="trophy" class="w-12 h-12"></i>
+                </div>
+                
+                <h2 class="text-3xl font-extrabold text-gray-800 mb-2">測驗完成！</h2>
+                <p class="text-gray-500 mb-8">做得好，這是你的成績單。</p>
+
+                <div class="mb-8 p-6 bg-emerald-50 rounded-2xl border border-emerald-100 w-full max-w-sm">
+                    <div class="text-sm text-emerald-600 uppercase tracking-widest font-bold mb-1">總得分</div>
+                    <div class="text-5xl font-black text-emerald-700">
+                        <span id="final-score">0</span><span class="text-2xl text-emerald-400 font-medium">/100</span>
+                    </div>
+                </div>
+
+                <div class="flex space-x-4 w-full max-w-sm">
+                    <button onclick="resetQuiz()" class="flex-1 py-3 bg-white border border-gray-300 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition">
+                        返回選單
+                    </button>
+                    <button onclick="restartCurrentQuiz()" class="flex-1 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 shadow-lg shadow-emerald-200 transition">
+                        再試一次
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        lucide.createIcons();
+
+        // ---------------------------------------------------------
+        //  DATA SOURCE: PASTE YOUR QUESTIONS HERE
+        // ---------------------------------------------------------
+        const questionsDB = {
+            'b1': [ // B1 管理導論
+                {
+                    q: "以下哪項不是管理學中的四項基本功能？",
+                    options: ["計劃 (Planning)", "組織 (Organizing)", "銷售 (Selling)", "控制 (Controlling)"],
+                    answer: 2,
+                    explain: "四項基本功能為：計劃、組織、領導、控制。銷售通常屬於市場營銷功能，而非基礎管理功能。"
+                },
+                {
+                    q: "SMART 目標設定原則中的 'A' 代表甚麼？",
+                    options: ["Action-oriented (行動導向)", "Attainable (可達成)", "Agreed (已協定)", "Advanced (進階)"],
+                    answer: 1,
+                    explain: "SMART 代表 Specific (具體), Measurable (可量度), Attainable (可達成), Relevant (相關), Time-based (設有時限)。"
+                },
+                {
+                    q: "在香港，從事「非製造業」的中小型企業，其僱員人數定義通常為少於多少人？",
+                    options: ["20 人", "50 人", "100 人", "200 人"],
+                    answer: 1,
+                    explain: "根據香港定義，非製造業中小企為僱用少於 50 人；製造業則為少於 100 人。"
+                }
+                // ... 您可以繼續在此加入 B1 題目
+            ],
+            'b2': [ // B2/B3 人力資源
+                {
+                    q: "根據馬斯洛的需求層次理論，最高層次的需要是？",
+                    options: ["社交需要", "尊重需要", "安全需要", "自我實現需要"],
+                    answer: 3,
+                    explain: "最高層次為自我實現需要 (Self-actualization)，即發揮潛能的需要。"
+                },
+                {
+                    q: "以下哪項屬於赫茨伯格雙因子理論中的「保健因子」(Hygiene Factors)？",
+                    options: ["成就感", "薪金", "工作本身的性質", "責任感"],
+                    answer: 1,
+                    explain: "薪金屬於保健因子，若不足會導致不滿，但即使足夠也未必能產生長期的激勵效果。其他選項均為激勵因子。"
+                },
+                {
+                    q: "企業透過「內部招聘」填補空缺的主要好處是？",
+                    options: ["帶來新思維", "節省招聘及培訓成本", "避免辦公室政治", "擴闊人際網絡"],
+                    answer: 1,
+                    explain: "內部招聘因員工已熟悉環境，可節省入職培訓時間及廣告費用；帶來新思維通常是外部招聘的優點。"
+                }
+                 // ... 您可以繼續在此加入 B2 題目
+            ],
+            'b4': [ // B4-B6 市場營銷
+                {
+                    q: "市場營銷組合 (Marketing Mix) 中的 4P 不包括以下哪項？",
+                    options: ["Product (產品)", "Price (價格)", "People (人員)", "Place (分銷)"],
+                    answer: 2,
+                    explain: "4P 指 Product, Price, Place, Promotion。People (人員) 屬於服務業營銷的 7P 之一，非傳統 4P。"
+                },
+                {
+                    q: "SWOT 分析中，'T' 代表甚麼？",
+                    options: ["Team (團隊)", "Target (目標)", "Time (時間)", "Threats (危機)"],
+                    answer: 3,
+                    explain: "SWOT 代表 Strengths (強項), Weaknesses (弱項), Opportunities (機會), Threats (危機)。"
+                },
+                {
+                    q: "哪一種定價策略是在產品推出初期設定「高價」，以吸納願付高價的消費者？",
+                    options: ["滲透性定價", "撇油性定價", "心理定價", "成本加成定價"],
+                    answer: 1,
+                    explain: "撇油性定價 (Skimming Pricing) 指初期定高價以獲取最大利潤，隨後才降價。"
+                }
+                 // ... 您可以繼續在此加入 B4 題目
+            ],
+            'b7': [ // B7-B9 財務管理
+                {
+                    q: "流動比率 (Current Ratio) 的計算公式是？",
+                    options: ["流動資產 ÷ 流動負債", "流動負債 ÷ 流動資產", "(流動資產 - 存貨) ÷ 流動負債", "毛利 ÷ 銷貨"],
+                    answer: 0,
+                    explain: "流動比率 = 流動資產 / 流動負債。選項 C 是速動比率。"
+                },
+                {
+                    q: "以下哪項通常被視為「長期融資」的方法？",
+                    options: ["銀行透支", "貿易賒帳", "發行債券", "應付費用"],
+                    answer: 2,
+                    explain: "發行債券通常年期超過一年，屬於長期融資；其他選項主要為解決短期資金周轉。"
+                },
+                {
+                    q: "若投資項目的淨現值 (NPV) 大於 0，企業在財務上應該？",
+                    options: ["拒絕投資", "接受投資", "重新計算", "視乎回收期而定"],
+                    answer: 1,
+                    explain: "NPV > 0 表示該項目能為企業股東創造額外價值（財富），理論上應接受。"
+                }
+                 // ... 您可以繼續在此加入 B7 題目
+            ]
+        };
+
+        // ---------------------------------------------------------
+        //  APP LOGIC
+        // ---------------------------------------------------------
+        
+        let currentQuizData = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let currentTopicId = '';
+
+        const screenTopics = document.getElementById('screen-topics');
+        const screenQuiz = document.getElementById('screen-quiz');
+        const screenResult = document.getElementById('screen-result');
+
+        const progressBar = document.getElementById('progress-bar');
+        const topicBadge = document.getElementById('quiz-topic-badge');
+        const currentQNum = document.getElementById('current-q-num');
+        const totalQNum = document.getElementById('total-q-num');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const feedbackContainer = document.getElementById('feedback-container');
+        const feedbackTitle = document.getElementById('feedback-title');
+        const feedbackText = document.getElementById('feedback-text');
+        const finalScoreDisplay = document.getElementById('final-score');
+
+        function startQuiz(topic) {
+            currentTopicId = topic;
+            currentQuizData = questionsDB[topic] || [];
+            
+            if (currentQuizData.length === 0) {
+                alert("此範疇題目準備中，請稍後再試！");
+                return;
+            }
+
+            // Shuffle questions (Optional - currently disabled to keep order for testing)
+            // currentQuizData.sort(() => Math.random() - 0.5);
+
+            currentQuestionIndex = 0;
+            score = 0;
+            
+            // UI Transition
+            screenTopics.classList.add('hidden');
+            screenResult.classList.add('hidden');
+            screenQuiz.classList.remove('hidden');
+
+            // Setup Badge
+            let topicName = "BAFS";
+            if(topic === 'b1') topicName = "B1 管理導論";
+            if(topic === 'b2') topicName = "B2/B3 人力資源";
+            if(topic === 'b4') topicName = "B4-B6 市場營銷";
+            if(topic === 'b7') topicName = "B7-B9 財務管理";
+            topicBadge.innerText = topicName;
+            
+            totalQNum.innerText = currentQuizData.length;
+            
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const q = currentQuizData[currentQuestionIndex];
+            
+            // Update Progress
+            const progressPercent = ((currentQuestionIndex) / currentQuizData.length) * 100;
+            progressBar.style.width = `${progressPercent}%`;
+            
+            currentQNum.innerText = currentQuestionIndex + 1;
+            questionText.innerText = q.q;
+            
+            // Reset UI
+            feedbackContainer.classList.add('hidden');
+            optionsContainer.innerHTML = '';
+            
+            // Generate Options
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "option-btn w-full p-4 border rounded-xl text-left bg-white border-gray-200 text-gray-700 font-medium text-lg flex items-center";
+                btn.innerHTML = `<span class="w-8 h-8 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center mr-4 text-sm font-bold flex-shrink-0">${String.fromCharCode(65+idx)}</span> ${opt}`;
+                btn.onclick = () => checkAnswer(idx, btn);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selectedIndex, btn) {
+            const q = currentQuizData[currentQuestionIndex];
+            const isCorrect = selectedIndex === q.answer;
+            const allBtns = optionsContainer.children;
+
+            // Disable all buttons
+            for (let b of allBtns) {
+                b.disabled = true;
+                b.classList.add('opacity-50'); // Dim all
+            }
+            btn.classList.remove('opacity-50'); // Highlight selected
+
+            if (isCorrect) {
+                btn.classList.add('correct');
+                score++;
+                feedbackTitle.innerText = "答對了！🎉";
+                feedbackTitle.className = "font-bold text-lg mb-1 text-emerald-600";
+            } else {
+                btn.classList.add('wrong');
+                // Highlight correct answer
+                const correctBtn = allBtns[q.answer];
+                correctBtn.classList.remove('opacity-50');
+                correctBtn.classList.add('correct');
+                
+                feedbackTitle.innerText = "答錯了";
+                feedbackTitle.className = "font-bold text-lg mb-1 text-red-600";
+            }
+
+            feedbackText.innerText = q.explain;
+            feedbackContainer.classList.remove('hidden');
+            
+            // Scroll to feedback (mobile friendly)
+            setTimeout(() => {
+                feedbackContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 100);
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < currentQuizData.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            screenQuiz.classList.add('hidden');
+            screenResult.classList.remove('hidden');
+            
+            // Calculate Score
+            const finalScore = Math.round((score / currentQuizData.length) * 100);
+            finalScoreDisplay.innerText = finalScore;
+
+            // Full progress bar
+            progressBar.style.width = '100%';
+        }
+
+        function resetQuiz() {
+            screenResult.classList.add('hidden');
+            screenTopics.classList.remove('hidden');
+        }
+
+        function restartCurrentQuiz() {
+            startQuiz(currentTopicId);
+        }
+    </script>
+</body>
+</html>
