@@ -69,7 +69,7 @@
     <!-- Navbar -->
     <nav class="bg-white shadow-md sticky top-0 z-50 h-16 flex-none">
         <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8 h-full">
-            <div class="flex justify-between items-center h-full gap-4">
+            <div class="flex justify-between items-center h-full gap-2 md:gap-4">
                 <!-- Left: Logo & Toggle -->
                 <div class="flex items-center flex-shrink-0">
                     <button id="mobile-menu-btn" class="lg:hidden p-2 rounded-md text-gray-600 hover:text-blue-600 hover:bg-gray-100 focus:outline-none mr-2">
@@ -80,8 +80,8 @@
                     <span class="font-bold text-xl tracking-tight text-gray-900 sm:hidden">BAFS</span>
                 </div>
 
-                <!-- Center: Search Bar -->
-                <div class="flex-1 max-w-md relative hidden sm:block">
+                <!-- Center: Search Bar (Hidden on very small screens) -->
+                <div class="flex-1 max-w-md relative hidden md:block">
                     <div class="relative">
                         <input type="text" id="searchInput" placeholder="搜尋課題 (如: 定價, 風險...)" 
                                class="w-full bg-gray-100 border border-gray-300 text-gray-700 text-sm rounded-full focus:ring-blue-500 focus:border-blue-500 block pl-10 p-2 transition-all">
@@ -97,21 +97,28 @@
 
                 <!-- Right: Buttons -->
                 <div class="flex items-center flex-shrink-0 space-x-2">
-                    <!-- Quiz Button (New Feature) -->
-                    <a href="quiz.html" class="flex items-center text-white bg-emerald-500 hover:bg-emerald-600 font-medium text-sm px-4 py-2 rounded-full transition shadow-sm mr-1">
-                        <i data-lucide="brain-circuit" class="w-4 h-4 mr-2"></i>
+                    
+                    <!-- Lazy Pack Button (New) -->
+                    <a href="summary.html" class="flex items-center text-yellow-700 bg-yellow-400 hover:bg-yellow-500 font-medium text-sm px-3 py-2 rounded-full transition shadow-sm" title="課題懶人包">
+                        <i data-lucide="list-tree" class="w-4 h-4 mr-1"></i>
+                        <span class="hidden md:inline">懶人包</span>
+                        <span class="md:hidden">總覽</span>
+                    </a>
+
+                    <!-- Quiz Button -->
+                    <a href="quiz.html" class="flex items-center text-white bg-emerald-500 hover:bg-emerald-600 font-medium text-sm px-3 py-2 rounded-full transition shadow-sm">
+                        <i data-lucide="brain-circuit" class="w-4 h-4 mr-1"></i>
                         <span class="hidden md:inline">小測驗</span>
                         <span class="md:hidden">Quiz</span>
                     </a>
 
                     <!-- Download Modal Trigger -->
-                    <button onclick="openDownloadModal()" class="flex items-center text-white bg-blue-600 hover:bg-blue-700 font-medium text-sm px-4 py-2 rounded-full transition shadow-sm">
-                        <i data-lucide="download" class="w-4 h-4 mr-2"></i>
+                    <button onclick="openDownloadModal()" class="flex items-center text-white bg-blue-600 hover:bg-blue-700 font-medium text-sm px-3 py-2 rounded-full transition shadow-sm">
+                        <i data-lucide="download" class="w-4 h-4 mr-1"></i>
                         <span class="hidden md:inline">下載筆記</span>
                         <span class="md:hidden">PDF</span>
                     </button>
                     
-                    <span class="text-sm text-gray-500 hidden lg:block ml-4">企業、會計與財務概論</span>
                 </div>
             </div>
         </div>
